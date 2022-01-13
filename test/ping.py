@@ -12,9 +12,7 @@ async def on_ready():
 
 @bot.command("clear")
 async def clear(ctx: Context):
-
-    for i in range(100):
-        await ctx.send('...', message_type=109)
+    await ctx.send('...', message_type=109)
 
 
 @bot.command('ping')

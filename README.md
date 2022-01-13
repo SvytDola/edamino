@@ -1,8 +1,10 @@
 # edamino
 Async api for amino
 
+## Installation: 
+`pip install ed-amino`
 
-# Example Bot.
+### Example Bot.
 ```py
 from edamino import Bot, Context, logger
 
