@@ -1,11 +1,8 @@
+import config
+
 from edamino import Bot, Context, logger
 
-from os import getenv
-from dotenv import load_dotenv
-
-load_dotenv('.env')
-
-bot = Bot(email=getenv('email'), password=getenv('password'))
+bot = Bot(email=config.EMAIL, password=config.PASSWORD)
 
 
 @bot.on_ready
