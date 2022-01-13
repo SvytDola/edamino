@@ -1,14 +1,15 @@
 from base64 import b64encode
 from typing import Optional, Dict, Tuple
 
-
 DEVICE_ID = "327766716D73766C776A6F767078766740676D61696C2E636F6D5DA1DCD8E8E7C6BDDEFD7128E05113FFE25F6239"
 
 
 class ContentType:
     AUDIO_AAC = "audio/aac"
     IMAGE_JPG = "image/jpg"
-    IMAGE_PNG = "image/png"
+    IMAGE_PNG = "image/png",
+    APPLICATION = "application/x-www-form-urlencoded"
+    APPLICATION_JSON = 'application/json; charset=utf-8'
 
 
 class InvalidRequest(Exception):

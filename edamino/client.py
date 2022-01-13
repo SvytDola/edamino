@@ -61,13 +61,21 @@ class Client:
     def device_id(self, device_id: str) -> None:
         self.headers["NDCDEVICEID"] = device_id
 
-    def __init__(self, 
+    def __init__(self,
                  com_id: int = 0,
-                 device_id: Optional[str] = None, 
+                 device_id: Optional[str] = None,
                  session: Optional[ClientSession] = None) -> None:
 
         self.set_ndc(com_id)
-        self.headers = {"NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID}
+        self.headers = {
+            "Accept-Language": "en-US",
+            "Content-Type": api.ContentType.APPLICATION_JSON,
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 4 Build/RQ3A.211001.001; com.narvii.amino.master/3.4.33598)",
+            "Host": "service.narvii.com",
+            "Accept-Encoding": "gzip",
+            "Connection": "Keep-Alive",
+            "NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID
+        }
         self.session = session if session is not None else ClientSession(json_serialize=dumps)
 
     async def __aexit__(self, *args) -> None:
@@ -115,7 +123,7 @@ class Client:
 
         async with self.session.request(method=method, url=url, headers=self.headers, data=data) as resp:
             response: str = await resp.text()
-
+        print(method, url, resp.status)
         if resp.status != 200:
             raise api.InvalidRequest(response)
 
@@ -528,12 +536,73 @@ class Client:
     async def delete_message(self):
         pass
 
-    async def edit_chat(self):
-        pass
-
     async def kick_from_chat(self):
         pass
 
     async def get_user_blogs(self, user_id: str, start: int = 0, size: int = 25) -> Tuple[objects.Blog]:
         response = await self.request('GET', f'blog?type=user&q={user_id}&start={start}&size={size}')
         return tuple(map(lambda blog: objects.Blog(**blog), response['blogList']))
+
+    async def pin_announcement_from_chat(self, chat_id: str, announcement: str, pin_announcement: bool = True) -> Dict:
+        data = {
+            "extensions": {
+                "announcement": announcement,
+                "pinAnnouncement": pin_announcement
+            }
+        }
+        return await self.request('POST', f'chat/thread/{chat_id}', data)
+
+    async def edit_chat(self,
+                        chat_id: str,
+                        title: Optional[str] = None,
+                        icon: Optional[str] = None,
+                        content: Optional[str] = None,
+                        announcement: Optional[str] = None,
+                        keywords: List = None,
+                        pin_announcement: bool = True,
+                        publish_to_global: bool = False,
+                        fans_only: bool = None
+                        ) -> Dict:
+
+        data: Dict[str, Any] = {}
+
+        if title:
+            data["title"] = title
+        if content:
+            data["content"] = content
+        if icon:
+            data["icon"] = icon
+        if keywords:
+            data["keywords"] = keywords
+        if announcement:
+            data["extensions"] = {
+                "announcement": announcement,
+                "pinAnnouncement": pin_announcement
+            }
+        if fans_only:
+            data["extensions"] = {"fansOnly": fans_only}
+
+        data["publishToGlobal"] = 0 if not publish_to_global else 1
+
+        return await self.request('POST', f'chat/thread/{chat_id}', data)
+
+    async def set_view_only_chat(self, chat_id: str, view_only: Literal['enable', 'disable']) -> Dict:
+        return await self.request('POST', f'chat/thread/{chat_id}/view-only/{view_only}')
+
+    async def set_background_chat(self, chat_id: str, background: Optional[bytes] = None):
+        data = {
+            "mediaType": api.MediaType.GIF_AND_IMAGE,
+            "mediaUploadValue": b64encode(background).decode(),
+            "mediaUploadValueContentType": api.ContentType.IMAGE_JPG
+        }
+        return await self.request('POST', f'thread/{chat_id}/member/{self.uid}/background', data)
+
+    async def set_default_background_chat(self, chat_id: str, background_number: int = 3):
+        data = {
+            "media": [
+                100,
+                f"http://static.narvii.com/default-chat-room-background/{background_number}_00.png",
+                None
+            ]
+        }
+        return await self.request('POST', f'thread/{chat_id}/member/{self.uid}/background', data)
