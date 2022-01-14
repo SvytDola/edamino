@@ -6,11 +6,10 @@ from .client import Client
 from .logger import logger as log
 from .context import Context
 from .objects import Message
-from .api import MessageType, MediaType, InvalidRequest, WebSocketConnectError
+from .api import MessageType, MediaType, WebSocketConnectError
 
 from dotenv import load_dotenv
 from asyncio import get_event_loop, AbstractEventLoop
-from json import JSONDecodeError
 from collections import namedtuple
 from typing import Optional, List, Union, Tuple, Dict, Callable
 
@@ -20,28 +19,6 @@ Handler = namedtuple('Handler', ['media_types', 'message_types', 'callback', 'de
 HANDLERS_COMMANDS: Dict[str, Handler] = {}
 HANDLERS_EVENTS: List[Handler] = []
 ON_READY: Optional[Callable] = None
-
-
-def exception_handler(loop, context):
-    exception = context.get("exception", None)
-    if isinstance(exception, InvalidRequest):
-
-        try:
-            data = loads(exception.args[0])
-            log.error(f"{data['api:message']} {data['api:statuscode']}")
-        except JSONDecodeError:
-            log.error(exception)
-    else:
-        raise exception
-
-
-async def help(ctx: Context):
-    string: str = ""
-    for key, value in HANDLERS_COMMANDS.items():
-        if 'help' not in key:
-            string += f'{key} - {value.description}\n'
-
-    await ctx.reply(message=string)
 
 
 class Bot:
@@ -79,11 +56,12 @@ class Bot:
             self.sid = None
 
     def update_cfg(self):
+        self.timestamp = int(time())
         string = f"sid={self.sid}\n" \
                  f"uid={self.uid}\n" \
                  f"email={self.email}\n" \
                  f"password={self.password}\n" \
-                 f"timestamp={int(time())}"
+                 f"timestamp={self.timestamp}"
 
         with open('.env', 'w') as file:
             file.write(string)
@@ -112,7 +90,7 @@ class Bot:
 
     def command(self,
                 command: str,
-                description: Optional[str] = None,
+                description: str = "Not descrption",
                 message_types: Optional[Union[List[int], Tuple[int, ...]]] = None,
                 media_types: Optional[Union[List[int], Tuple[int, ...]]] = None):
 
@@ -146,7 +124,7 @@ class Bot:
                 if ws.closed:
                     if time() - self.timestamp > 60 * 60 * 12:
                         await client.login(self.email, self.password)
-                        log.info('login')
+                        log.info('Login.')
                         self.update_cfg()
 
                     ws = await client.ws_connect()
@@ -170,17 +148,17 @@ class Bot:
                             command = msg.content.split(" ")[0]
                             command = command.lower()
                             handler = HANDLERS_COMMANDS[command]
-
-                            if msg.type in handler.media_types and msg.mediaType in handler.media_types:
+                            if '-h' in msg.content:
+                                await context.reply(handler.description)
+                            elif msg.type in handler.media_types and msg.mediaType in handler.media_types:
                                 self.loop.create_task(handler.callback(context))
 
-            except (TypeError, KeyError, AttributeError, WebSocketConnectError) as e:
+            except (TypeError, KeyError, AttributeError, WebSocketConnectError):
                 continue
 
     def start(self, loop: Optional[AbstractEventLoop] = None, device_id: Optional[str] = None) -> None:
         self.check_cfg()
         self.loop = loop if loop is not None else get_event_loop()
-        # self.loop.set_exception_handler(exception_handler)
 
         client = Client(device_id=device_id)
         try:
@@ -188,25 +166,11 @@ class Bot:
                 login = self.loop.run_until_complete(client.login(self.email, self.password))
                 self.sid = login.sid
                 self.uid = login.auid
-                log.info("update cfg")
+                log.info("Update config.")
                 self.update_cfg()
 
             client.sid = self.sid
             client.uid = self.uid
-            # future = run_coroutine_threadsafe(self.__call(loop), loop)
-            # Thread(target=loop.run_forever).start()
-            #
-            # future.result()
-
-            handler = Handler(
-                callback=help,
-                message_types=[MessageType.TEXT],
-                media_types=[MediaType.TEXT],
-                description=None
-            )
-
-            HANDLERS_COMMANDS[f'{self.prefix}help'] = handler
-
             self.loop.run_until_complete(self.__call(client))
         except KeyboardInterrupt:
             log.info("Goodbye. ^^")
@@ -215,6 +179,5 @@ class Bot:
 
     @staticmethod
     def on_ready(t):
-        # :)
         global ON_READY
         ON_READY = t

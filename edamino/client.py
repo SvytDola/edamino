@@ -222,17 +222,16 @@ class Client:
         }
         return await self.request("POST", f"chat/thread/{chat_id}/message", json=data)
 
-    async def send_message(
-            self,
-            chat_id: str,
-            message: str,
-            message_type: int = 0,
-            ref_id: Optional[int] = None,
-            reply: Optional[str] = None,
-            mentions: Optional[List[str]] = None,
-            embed: Optional[api.Embed] = None,
-            link_snippets_list: Optional[List[api.LinkSnippet]] = None
-    ) -> Dict:
+    async def send_message(self,
+                           chat_id: str,
+                           message: str,
+                           message_type: int = 0,
+                           ref_id: Optional[int] = None,
+                           reply: Optional[str] = None,
+                           mentions: Optional[List[str]] = None,
+                           embed: Optional[api.Embed] = None,
+                           link_snippets_list: Optional[List[api.LinkSnippet]] = None
+                           ) -> Dict:
         if ref_id is None:
             ref_id = int(time() / 10 % 1000000000)
 
