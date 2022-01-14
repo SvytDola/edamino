@@ -123,7 +123,6 @@ class Client:
 
         async with self.session.request(method=method, url=url, headers=self.headers, data=data) as resp:
             response: str = await resp.text()
-        print(method, url, resp.status)
         if resp.status != 200:
             raise api.InvalidRequest(response)
 
@@ -226,7 +225,7 @@ class Client:
     async def send_message(
             self,
             chat_id: str,
-            message: Optional[str] = None,
+            message: str,
             message_type: int = 0,
             ref_id: Optional[int] = None,
             reply: Optional[str] = None,
@@ -245,9 +244,6 @@ class Client:
 
         if message is not None:
             message = message.replace("<$", "‎‏").replace("$>", "‬‭")
-        else:
-            if embed is not None:
-                message = embed['content']
 
         if link_snippets_list:
             link_snippets_list = [snippet.dict() for snippet in link_snippets_list]
@@ -448,7 +444,7 @@ class Client:
     async def get_online_users(self, start: int = 0, size: int = 25) -> Tuple[objects.UserProfile, ...]:
         response = await self.request(
             "GET",
-            f'live-layer?topic=ndtopic:x{self.ndc_id}:online-members&start={start}&size={size}'
+            f'live-layer?topic=ndtopic:{self.ndc_id}:online-members&start={start}&size={size}'
         )
         return tuple(map(lambda user: objects.UserProfile(**user), response["userProfileList"]))
 

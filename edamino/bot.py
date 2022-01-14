@@ -2,11 +2,11 @@ from time import time
 from os import environ
 
 from ujson import loads
-from edamino.client import Client
-from edamino.logger import logger as log
-from edamino.context import Context
-from edamino.objects import Message
-from edamino.api import MessageType, MediaType, InvalidRequest, WebSocketConnectError
+from .client import Client
+from .logger import logger as log
+from .context import Context
+from .objects import Message
+from .api import MessageType, MediaType, InvalidRequest, WebSocketConnectError
 
 from dotenv import load_dotenv
 from asyncio import get_event_loop, AbstractEventLoop
@@ -19,7 +19,7 @@ load_dotenv('.env')
 Handler = namedtuple('Handler', ['media_types', 'message_types', 'callback', 'description'])
 HANDLERS_COMMANDS: Dict[str, Handler] = {}
 HANDLERS_EVENTS: List[Handler] = []
-ON_READY: Callable = None
+ON_READY: Optional[Callable] = None
 
 
 def exception_handler(loop, context):
@@ -180,7 +180,7 @@ class Bot:
     def start(self, loop: Optional[AbstractEventLoop] = None, device_id: Optional[str] = None) -> None:
         self.check_cfg()
         self.loop = loop if loop is not None else get_event_loop()
-        self.loop.set_exception_handler(exception_handler)
+        # self.loop.set_exception_handler(exception_handler)
 
         client = Client(device_id=device_id)
         try:

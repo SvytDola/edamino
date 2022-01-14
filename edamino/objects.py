@@ -441,7 +441,7 @@ class CustomList(pydantic.BaseModel):
 
 
 class Page(pydantic.BaseModel):
-    customList: typing.Optional[typing.Tuple[CustomList]]
+    customList: typing.Optional[typing.Tuple[CustomList, ...]]
     defaultList: typing.Optional[typing.Tuple]
 
 

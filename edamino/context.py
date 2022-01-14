@@ -1,7 +1,7 @@
 from typing import Optional
 
-from edamino import Client
-from edamino.objects import Message
+from .client import Client
+from .objects import Message
 
 
 class Context:
