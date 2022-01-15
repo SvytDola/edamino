@@ -60,3 +60,33 @@ class Context:
 
     async def get_user_info(self):
         return await self.client.get_user_info(self.msg.author.uid)
+
+    async def invite(self, chat_id: str):
+        return await self.client.invite_to_chat(uids=[self.msg.author.uid], chat_id=chat_id)
+
+    async def follow(self):
+        return await self.client.follow([self.msg.author.uid])
+
+    async def unfollow(self):
+        return await self.client.unfollow(self.msg.uid)
+
+    async def delete_message(self, as_staff: bool = False, reason: Optional[str] = None):
+        return self.client.delete_message(chat_id=self.msg.threadId,
+                                          message_id=self.msg.messageId,
+                                          reason=reason,
+                                          as_staff=as_staff)
+
+    async def kick(self, allow_rejoin: bool = True):
+        return self.client.kick_from_chat(self.msg.threadId, self.msg.author.uid, allow_rejoin)
+
+    async def join_community(self, code: Optional[str] = None):
+        return await self.client.join_community(code)
+
+    async def leave_community(self):
+        return await self.client.leave_community()
+
+    async def join_chat(self):
+        return await self.client.join_chat(self.msg.threadId)
+
+    async def leave_chat(self):
+        return await self.client.leave_chat(self.msg.threadId)

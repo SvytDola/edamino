@@ -10,11 +10,6 @@ async def on_ready():
     logger.info('Ready.')
 
 
-@bot.command("clear")
-async def clear(ctx: Context):
-    await ctx.send('...', message_type=109)
-
-
 @bot.command('ping')
 async def echo(ctx: Context):
     await ctx.reply('Pong!')

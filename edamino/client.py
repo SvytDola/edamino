@@ -110,12 +110,14 @@ class Client:
     async def request(self,
                       method: Literal['POST', 'GET', 'DELETE', 'PUT'],
                       url: str,
-                      json: Optional[Dict] = None) -> Dict:
+                      json: Optional[Dict] = None,
+                      full_url: bool = False) -> Dict:
         """
         Sending requests in amino.
         """
         data: Optional[str] = None
-        url = f"https://service.narvii.com/api/v1/{self.ndc_id}/s/{url}"
+        if not full_url:
+            url = f"https://service.narvii.com/api/v1/{self.ndc_id}/s/{url}"
         if json is not None:
             json['timestamp'] = get_timestamp()
             data = dumps(json)
@@ -290,7 +292,7 @@ class Client:
             "targetCode": 1,
             "objectType": object_type
         }
-        base = objects.BaseLinkInfo(**await self.request('POST', 'link-resolution', data))
+        base = objects.BaseLinkInfo(**await self.request('POST', f'https://service.narvii.com/api/v1/g/s-{self.ndc_id}/link-resolution', data, True))
         return base.linkInfoV2.extensions.linkInfo
 
     async def get_chat_info(self, chat_id) -> objects.Chat:
@@ -328,14 +330,13 @@ class Client:
     async def get_message_info(self):
         pass
 
-    async def get_blog_info(self):
-        pass
+    async def get_blog_info(self, blog_id: str) -> objects.Blog:
+        response = await self.request('GET', f'blog/{blog_id}')
+        return objects.Blog(**response['blog'])
 
-    async def get_wiki_info(self):
-        pass
-
-    async def get_blogs_from_users(self):
-        pass
+    async def get_wiki_info(self, wiki_id: str) -> Dict:
+        response = await self.request('GET', f'item/{wiki_id}')
+        return response
 
     async def post_blog(self):
         pass
@@ -415,8 +416,51 @@ class Client:
     async def create_chat(self):
         pass
 
-    async def comment(self):
-        pass
+    async def comment_blog(self,
+                           blog_id: str,
+                           message: Optional[str] = None,
+                           sticker_id: Optional[str] = None,
+                           reply: Optional[str] = None) -> Dict:
+        data = {
+            "content": message,
+            "stickerId": sticker_id,
+            "type": 0,
+            "eventSource": "PostDetailView"
+        }
+        if reply is not None:
+            data["respondTo"] = reply
+        return await self.request('POST', f'blog/{blog_id}/{"comment" if self.ndc_id != "g" else "g-comment"}', data)
+
+    async def comment_wiki(self,
+                           wiki_id: str,
+                           message: Optional[str] = None,
+                           sticker_id: Optional[str] = None,
+                           reply: Optional[str] = None) -> Dict:
+        data = {
+            "content": message,
+            "stickerId": sticker_id,
+            "type": 0,
+            "eventSource": "UserProfileView"
+        }
+        if reply is not None:
+            data["respondTo"] = reply
+        return await self.request('POST', f'item/{wiki_id}/{"comment" if self.ndc_id != "g" else "g-comment"}', data)
+
+    async def comment_profile(self,
+                              uid: str,
+                              message: Optional[str] = None,
+                              sticker_id: Optional[str] = None,
+                              reply: Optional[str] = None) -> Dict:
+        data = {
+            "content": message,
+            "stickerId": sticker_id,
+            "type": 0,
+            "eventSource": "UserProfileView"
+        }
+        if reply is not None:
+            data["respondTo"] = reply
+        return await self.request('POST', f'user-profile/{uid}/{"comment" if self.ndc_id != "g" else "g-comment"}',
+                                  data)
 
     async def send_active_object(self,
                                  opt_in_ads_flags: int = 2147483647,
@@ -431,14 +475,19 @@ class Client:
 
         return await self.request('POST', 'community/stats/user-active-time', data)
 
-    async def create_bubble(self):
-        pass
+    async def like_blog(self, blog_id: str) -> Dict:
+        data = {
+            "value": 4,
+            "eventSource": "UserProfileView"
+        }
+        return await self.request('POST', f"blog/{blog_id}/vote?cv=1.2", json=data)
 
-    async def like_blog(self):
-        pass
-
-    async def unlike_blog(self):
-        pass
+    async def like_blogs(self, blog_ids: List[str]) -> Dict:
+        data = {
+            "value": 4,
+            "targetIdList": blog_ids
+        }
+        return await self.request('POST', f"feed/vote", json=data)
 
     async def get_online_users(self, start: int = 0, size: int = 25) -> Tuple[objects.UserProfile, ...]:
         response = await self.request(
@@ -519,20 +568,32 @@ class Client:
     async def join_chat(self, chat_id: str) -> Dict:
         return await self.request('POST', f'chat/thread/{chat_id}/member/{self.uid}')
 
-    async def leave_chat(self, chat_id: str) -> Dict:
-        return await self.request('DELETE', f'chat/thread/{chat_id}/member/{self.uid}')
+    async def delete_message(self,
+                             chat_id: str,
+                             message_id: str,
+                             as_staff: bool = False,
+                             reason: Optional[str] = None) -> Dict:
+        data = {
+            "adminOpName": 102
+        }
+        if as_staff and reason:
+            data["adminOpNote"] = {"content": reason}
 
-    async def follow(self):
-        pass
+        if not as_staff:
+            return await self.request('DELETE', f'chat/thread/{chat_id}/message/{message_id}')
+        else:
+            return await self.request('POST', f'chat/thread/{chat_id}/message/{message_id}/admin', data)
 
-    async def unfollow(self):
-        pass
+    async def follow(self, uids: List[str]) -> Dict:
+        data = {"targetUidList": uids}
+        return await self.request('POST', f'user-profile/{self.uid}/joined', data)
 
-    async def delete_message(self):
-        pass
+    async def unfollow(self, uid: str) -> Dict:
+        return await self.request('DELETE', f'user-profile/{self.uid}/joined/{uid}')
 
-    async def kick_from_chat(self):
-        pass
+    async def kick_from_chat(self, chat_id: str, uid: str, allow_rejoin: bool = True) -> Dict:
+        return await self.request('DELETE',
+                                  f'chat/thread/{chat_id}/member/{uid}?allowRejoin={1 if allow_rejoin else 0}')
 
     async def get_user_blogs(self, user_id: str, start: int = 0, size: int = 25) -> Tuple[objects.Blog]:
         response = await self.request('GET', f'blog?type=user&q={user_id}&start={start}&size={size}')
@@ -601,3 +662,7 @@ class Client:
             ]
         }
         return await self.request('POST', f'thread/{chat_id}/member/{self.uid}/background', data)
+
+    async def leave_chat(self, chat_id: str):
+        return await self.request('DELETE', f'chat/thread/{chat_id}/member/{self.uid}')
+

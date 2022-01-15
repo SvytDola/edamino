@@ -18,7 +18,12 @@ async def echo(ctx: Context):
     )
     await ctx.client.set_view_only_chat(ctx.msg.threadId, 'disable')
 
-    user = await ctx.get_user_info()
+
+@bot.command('del')
+async def on_clear(ctx: Context):
+    await ctx.reply('Good!')
+    await ctx.delete_message()
+
 
 if __name__ == '__main__':
     bot.start()
