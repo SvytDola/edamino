@@ -15,7 +15,7 @@ from typing import Optional, List, Union, Tuple, Dict, Callable
 
 load_dotenv('.env')
 
-Handler = namedtuple('Handler', ['media_types', 'message_types', 'callback', 'description'])
+Handler = namedtuple('Handler', ['media_types', 'message_types', 'callback', 'description', 'annotations'])
 HANDLERS_COMMANDS: Dict[str, Handler] = {}
 HANDLERS_EVENTS: List[Handler] = []
 ON_READY: Optional[Callable] = None
@@ -32,6 +32,12 @@ class Bot:
         self.password = password
         self.prefix = prefix
         self.timestamp = None
+
+    def get_context(self, client: Client, msg: Message):
+        client_context = Client(session=client.session, device_id=client.device_id, com_id=msg.ndcId)
+        client_context.login_sid(self.sid, self.uid)
+        context = Context(msg=msg, client=client_context)
+        return context
 
     def check_cfg(self):
         email = environ.get('email')
@@ -81,7 +87,8 @@ class Bot:
                 description=None,
                 media_types=tuple(media_types),
                 message_types=tuple(message_types),
-                callback=callback
+                callback=callback,
+                annotations=None
             )
             HANDLERS_EVENTS.append(handler)
             return callback
@@ -90,23 +97,24 @@ class Bot:
 
     def command(self,
                 command: str,
-                description: str = "Not descrption",
+                description: str = "Not description.",
                 message_types: Optional[Union[List[int], Tuple[int, ...]]] = None,
                 media_types: Optional[Union[List[int], Tuple[int, ...]]] = None):
 
         command = command.lower()
-
         if not message_types:
             message_types = [MessageType.TEXT]
         if not media_types:
             media_types = [MediaType.TEXT]
 
         def register_handler(callback):
+            annotations = [annotation for annotation in callback.__annotations__.values()][1:]
             handler = Handler(
                 description=description,
                 media_types=tuple(media_types),
                 message_types=tuple(message_types),
-                callback=callback
+                callback=callback,
+                annotations=tuple(annotations)
             )
             HANDLERS_COMMANDS[f"{self.prefix}{command}"] = handler
 
@@ -136,24 +144,30 @@ class Bot:
                 if data['t'] == 1000:
                     msg = Message(**data['o']['chatMessage'], ndcId=data['o']['ndcId'])
 
-                    client_context = Client(session=client.session, device_id=client.device_id, com_id=msg.ndcId)
-                    client_context.login_sid(self.sid, self.uid)
-                    context = Context(msg=msg, client=client_context)
-
                     if msg.author.uid != self.uid:
-
                         for handler in HANDLERS_EVENTS:
                             if msg.type in handler.message_types and msg.mediaType in handler.media_types:
+                                context = self.get_context(client, msg)
                                 self.loop.create_task(handler.callback(context))
 
                         if msg.content is not None:
-                            command = msg.content.split(" ")[0]
-                            command = command.lower()
+                            words = msg.content.split(" ")
+                            command = words[0].lower()
                             handler = HANDLERS_COMMANDS[command]
+                            context = self.get_context(client, msg)
+                            args = [context]
+
+                            try:
+                                if handler.annotations:
+                                    for word, annotation in zip(words[1:], handler.annotations):
+                                        args.append(annotation(word))
+                            except ValueError as error:
+                                log.error(repr(error) + f"\nfunction: {handler.callback.__name__}")
+
                             if '-h' in msg.content:
                                 await context.reply(handler.description)
                             elif msg.type in handler.media_types and msg.mediaType in handler.media_types:
-                                self.loop.create_task(handler.callback(context))
+                                self.loop.create_task(handler.callback(*args))
 
             except (TypeError, KeyError, AttributeError, WebSocketConnectError):
                 continue

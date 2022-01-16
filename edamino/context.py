@@ -90,3 +90,12 @@ class Context:
 
     async def leave_chat(self):
         return await self.client.leave_chat(self.msg.threadId)
+
+    async def get_info_link(self, link: str):
+        return await self.client.get_info_link(link)
+
+    async def get_from_id(self, object_id: str, object_type: int = 0):
+        return await self.client.get_from_id(object_id, object_type=object_type)
+
+    async def get_user_blogs(self, start: int = 0, size: int = 25):
+        return await self.client.get_user_blogs(self.msg.author.uid, start=start, size=size)

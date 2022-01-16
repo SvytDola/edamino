@@ -19,6 +19,10 @@ async def echo(ctx: Context):
     await ctx.client.set_view_only_chat(ctx.msg.threadId, 'disable')
 
 
+@bot.command('send')
+async def on_int(ctx: Context, coins: int, link: str):
+    pass
+
 @bot.command('del')
 async def on_clear(ctx: Context):
     await ctx.reply('Good!')
