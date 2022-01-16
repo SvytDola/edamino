@@ -123,8 +123,10 @@ class Bot:
             try:
                 if ws.closed:
                     if time() - self.timestamp > 60 * 60 * 12:
-                        await client.login(self.email, self.password)
+                        login = await client.login(self.email, self.password)
                         log.info('Login.')
+                        self.sid = login.sid
+                        self.uid = login.auid
                         self.update_cfg()
 
                     ws = await client.ws_connect()

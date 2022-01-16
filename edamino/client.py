@@ -233,7 +233,7 @@ class Client:
                            mentions: Optional[List[str]] = None,
                            embed: Optional[api.Embed] = None,
                            link_snippets_list: Optional[List[api.LinkSnippet]] = None
-                           ) -> Dict:
+                           ) -> objects.Message:
         if ref_id is None:
             ref_id = int(time() / 10 % 1000000000)
 
@@ -261,7 +261,9 @@ class Client:
         }
         if reply is not None:
             data["replyMessageId"] = reply
-        return await self.request("POST", f"chat/thread/{chat_id}/message", json=data)
+
+        response = await self.request("POST", f"chat/thread/{chat_id}/message", json=data)
+        return objects.Message(**response['message'])
 
     async def get_chats(self, start: int = 0, size: int = 100) -> Tuple[objects.Chat, ...]:
         response = await self.request('GET', f'chat/thread?type=joined-me&start={start}&size={size}')
@@ -665,4 +667,3 @@ class Client:
 
     async def leave_chat(self, chat_id: str):
         return await self.request('DELETE', f'chat/thread/{chat_id}/member/{self.uid}')
-
