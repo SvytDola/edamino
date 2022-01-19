@@ -1,8 +1,8 @@
 import config
 from edamino import Bot, Context, logger
+from edamino.api import InvalidRequest
 
 bot = Bot(email=config.EMAIL, password=config.PASSWORD, prefix="/")
-
 
 @bot.on_ready
 async def on_ready():
@@ -25,9 +25,11 @@ async def on_int(ctx: Context, coins: int, link: str):
 
 @bot.command('del')
 async def on_clear(ctx: Context):
-    await ctx.reply('Good!')
-    await ctx.delete_message()
-
+    msg = await ctx.reply('Good!')
+    try:
+        await ctx.reply("d" * 2003)
+    except InvalidRequest as e:
+        await ctx.reply(e.message)
 
 if __name__ == '__main__':
     bot.start()

@@ -155,18 +155,26 @@ class Bot:
                             command = words[0].lower()
                             handler = HANDLERS_COMMANDS[command]
                             context = self.get_context(client, msg)
+
+                            if '-h' in msg.content:
+                                await context.reply(handler.description)
+                                continue
+
                             args = [context]
 
                             try:
                                 if handler.annotations:
-                                    for word, annotation in zip(words[1:], handler.annotations):
-                                        args.append(annotation(word))
+
+                                    if words[1:]:
+                                        for word, annotation in zip(words[1:], handler.annotations):
+                                            args.append(annotation(word))
+                                    else:
+                                        continue
                             except ValueError as error:
                                 log.error(repr(error) + f"\nfunction: {handler.callback.__name__}")
+                                continue
 
-                            if '-h' in msg.content:
-                                await context.reply(handler.description)
-                            elif msg.type in handler.media_types and msg.mediaType in handler.media_types:
+                            if msg.type in handler.media_types and msg.mediaType in handler.media_types:
                                 self.loop.create_task(handler.callback(*args))
 
             except (TypeError, KeyError, AttributeError, WebSocketConnectError):

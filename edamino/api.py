@@ -13,8 +13,10 @@ class ContentType:
 
 
 class InvalidRequest(Exception):
-    pass
-
+    def __init__(self, message: str, status: int) -> None:
+        super().__init__(message, status)
+        self.message = message
+        self.status = status
 
 class WebSocketConnectError(Exception):
     pass

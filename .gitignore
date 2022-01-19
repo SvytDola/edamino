@@ -130,3 +130,5 @@ dmypy.json
 
 # Pycharm config
 .idea/
+
+.env

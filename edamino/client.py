@@ -124,11 +124,11 @@ class Client:
             self.headers['NDC-MSG-SIG'] = self.gen_sig(data)
 
         async with self.session.request(method=method, url=url, headers=self.headers, data=data) as resp:
-            response: str = await resp.text()
+            response: str = await resp.json(loads=loads)
         if resp.status != 200:
-            raise api.InvalidRequest(response)
+            raise api.InvalidRequest(response['api:message'], response['api:status'])
 
-        return loads(response)
+        return response
 
     async def login(self, email: str, password: str) -> objects.Login:
         data = {
@@ -294,7 +294,13 @@ class Client:
             "targetCode": 1,
             "objectType": object_type
         }
-        base = objects.BaseLinkInfo(**await self.request('POST', f'https://service.narvii.com/api/v1/g/s-{self.ndc_id}/link-resolution', data, True))
+
+        if self.ndc_id == "g":
+            url = "https://service.narvii.com/api/v1/g/s/link-resolution"
+        else:
+            url = f'https://service.narvii.com/api/v1/g/s-{self.ndc_id}/link-resolution'
+
+        base = objects.BaseLinkInfo(**await self.request('POST', url, data, True))
         return base.linkInfoV2.extensions.linkInfo
 
     async def get_chat_info(self, chat_id) -> objects.Chat:
