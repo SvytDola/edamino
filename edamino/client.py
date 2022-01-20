@@ -70,7 +70,8 @@ class Client:
         self.headers = {
             "Accept-Language": "en-US",
             "Content-Type": api.ContentType.APPLICATION_JSON,
-            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 4 Build/RQ3A.211001.001; com.narvii.amino.master/3.4.33598)",
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 4 Build/RQ3A"
+                          ".211001.001; com.narvii.amino.master/3.4.33598)",
             "Host": "service.narvii.com",
             "Accept-Encoding": "gzip",
             "Connection": "Keep-Alive",
@@ -124,10 +125,9 @@ class Client:
             self.headers['NDC-MSG-SIG'] = self.gen_sig(data)
 
         async with self.session.request(method=method, url=url, headers=self.headers, data=data) as resp:
-            response: str = await resp.json(loads=loads)
+            response: Dict = await resp.json(loads=loads)
         if resp.status != 200:
-            raise api.InvalidRequest(response['api:message'], response['api:status'])
-
+            raise api.InvalidRequest(response['api:message'], response['api:statuscode'])
         return response
 
     async def login(self, email: str, password: str) -> objects.Login:
@@ -182,7 +182,8 @@ class Client:
             text = await response.text()
 
         if response.status != 200:
-            raise api.InvalidRequest(text)
+            js_resp: Dict = loads(text)
+            raise api.InvalidRequest(js_resp['api:message'], js_resp['api:statuscode'])
 
         return loads(text)['mediaValue']
 
@@ -191,7 +192,8 @@ class Client:
             f = await response.read()
 
         if response.status != 200:
-            raise api.InvalidRequest("Unable to upload file")
+            js_resp: Dict = loads(await response.text())
+            raise api.InvalidRequest(js_resp['api:message'], js_resp['api:statuscode'])
 
         return f
 
@@ -335,8 +337,9 @@ class Client:
         )
         return tuple(map(lambda user: objects.UserProfile(**user), response['memberList']))
 
-    async def get_message_info(self):
-        pass
+    async def get_message_info(self, chat_id: str, message_id: str) -> objects.Message:
+        response = await self.request('GET', f'chat/thread/{chat_id}/message/{message_id}')
+        return objects.Message(**response['message'])
 
     async def get_blog_info(self, blog_id: str) -> objects.Blog:
         response = await self.request('GET', f'blog/{blog_id}')

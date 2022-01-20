@@ -7,16 +7,17 @@ DEVICE_ID = "327766716D73766C776A6F767078766740676D61696C2E636F6D5DA1DCD8E8E7C6B
 class ContentType:
     AUDIO_AAC = "audio/aac"
     IMAGE_JPG = "image/jpg"
-    IMAGE_PNG = "image/png",
+    IMAGE_PNG = "image/png"
     APPLICATION = "application/x-www-form-urlencoded"
     APPLICATION_JSON = 'application/json; charset=utf-8'
 
 
 class InvalidRequest(Exception):
     def __init__(self, message: str, status: int) -> None:
-        super().__init__(message, status)
+        super().__init__(message)
         self.message = message
         self.status = status
+
 
 class WebSocketConnectError(Exception):
     pass
