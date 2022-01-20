@@ -676,3 +676,28 @@ class Client:
 
     async def leave_chat(self, chat_id: str):
         return await self.request('DELETE', f'chat/thread/{chat_id}/member/{self.uid}')
+
+    async def get_bubbles(self, start: int = 0, size: int = 25) -> Tuple[objects.ChatBubble, ...]:
+        response = await self.request(
+            'GET',
+            f'chat/chat-bubble?type=all-my-bubbles&start={start}&size={size}'
+        )
+        return tuple(map(lambda b: objects.ChatBubble(**b), response["objects.ChatBubbleList"]))
+
+    async def delete_bubble(self, bubble_id: str) -> Dict:
+        return await self.request('DELETE', f'chat/chat-bubble/{bubble_id}')
+
+    async def set_bubble(self, chat_id: str, bubble_id: str, apply_to_all: bool = False) -> Dict:
+        data = {
+            "bubbleId": bubble_id,
+            "applyToAll": 1 if apply_to_all else 0,
+            "threadId": chat_id,
+        }
+        return await self.request('POST', f'chat/thread/apply-bubble', json=data)
+
+    async def get_templates(self):
+        response = await self.request(
+            'GET',
+            f'chat/chat-bubble/templates'
+        )
+        return tuple(map(lambda t: objects.Template(**t), response['templateList']))

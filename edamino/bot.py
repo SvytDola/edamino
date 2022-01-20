@@ -83,6 +83,11 @@ class Bot:
             media_types = [MediaType.TEXT]
 
         def register_handler(callback):
+            global ON_READY
+            if callback.__name__ == "on_ready":
+                ON_READY = callback
+                return callback
+
             handler = Handler(
                 description=None,
                 media_types=tuple(media_types),
@@ -201,7 +206,3 @@ class Bot:
         finally:
             self.loop.run_until_complete(client.session.close())
 
-    @staticmethod
-    def on_ready(t):
-        global ON_READY
-        ON_READY = t
