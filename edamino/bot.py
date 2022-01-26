@@ -219,3 +219,7 @@ class Bot:
             log.info("Goodbye. ^^")
         finally:
             self.loop.run_until_complete(client.session.close())
+<<<<<<< HEAD
+=======
+
+>>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39
