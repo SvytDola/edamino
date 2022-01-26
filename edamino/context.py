@@ -3,7 +3,7 @@ from .objects import Message
 from .api import Embed, LinkSnippet
 from typing import (
     List,
-    Optional
+    Optional, Literal
 )
 from contextlib import asynccontextmanager
 from ujson import dumps
@@ -103,15 +103,21 @@ class Context:
         return await self.client.get_user_blogs(self.msg.author.uid, start=start, size=size)
 
     @asynccontextmanager
-    async def typing(self):
+    async def typing(self, chat_type: Literal[0, 1, 2]):
+        data = {
+            "o": {
+                "actions": ["Typing"],
+                "target": f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}",
+                "ndcId": self.msg.ndcId,
+                "params": {"threadType": chat_type},
+                "id": "2713213"
+            },
+            "t": 304
+        }
+
         try:
-            await self.ws.send_str(dumps({"o": {"actions": ["Typing"],
-                                                "target": f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}",
-                                                "ndcId": self.msg.ndcId, "params": {"threadType": 2}, "id": "2713103"},
-                                          "t": 304}))
+            await self.ws.send_str(dumps(data))
             yield
         finally:
-            await self.ws.send_str(dumps({"o": {"actions": ["Typing"],
-                                                "target": f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}",
-                                                "ndcId": self.msg.ndcId, "params": {"threadType": 2}, "id": "2713103"},
-                                          "t": 306}))
+            data['t'] = 306
+            await self.ws.send_str(dumps(data))
