@@ -4,10 +4,6 @@ from edamino.api import InvalidRequest
 
 bot = Bot(email=config.EMAIL, password=config.PASSWORD, prefix="/")
 
-<<<<<<< HEAD
-=======
-
->>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39
 @bot.event()
 async def on_ready():
     logger.info('Ready.')

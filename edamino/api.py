@@ -8,20 +8,13 @@ DEVICE_ID = "3298A71AFE0EA0B7EDDAFA2337B38488E23D8060A98946A75EAE99EBE7FA2F0B4D4
 
 
 class ContentType:
-<<<<<<< HEAD
     AUDIO_AAC: str = "audio/aac"
     IMAGE_JPG: str = "image/jpg"
     IMAGE_PNG: str = "image/png"
     APPLICATION_URL_ENCODED: str = "application/x-www-form-urlencoded"
     APPLICATION_JSON: str = 'application/json; charset=utf-8'
     APPLICATION_OCTET_STREAM: str = 'application/octet-stream'
-=======
-    AUDIO_AAC = "audio/aac"
-    IMAGE_JPG = "image/jpg"
-    IMAGE_PNG = "image/png"
     APPLICATION = "application/x-www-form-urlencoded"
-    APPLICATION_JSON = 'application/json; charset=utf-8'
->>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39
 
 
 class InvalidRequest(Exception):

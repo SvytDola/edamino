@@ -8,6 +8,7 @@ from typing import (
 from contextlib import asynccontextmanager
 from ujson import dumps
 
+
 class Context:
     __slots__ = ('msg', 'client', 'ws')
 
@@ -100,11 +101,17 @@ class Context:
 
     async def get_user_blogs(self, start: int = 0, size: int = 25):
         return await self.client.get_user_blogs(self.msg.author.uid, start=start, size=size)
-    
+
     @asynccontextmanager
     async def typing(self):
-        try:    
-            await self.ws.send_str(dumps({"o":{"actions":["Typing"],"target":f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}","ndcId": self.msg.ndcId,"params":{"threadType":2},"id":"2713103"},"t":304}))
+        try:
+            await self.ws.send_str(dumps({"o": {"actions": ["Typing"],
+                                                "target": f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}",
+                                                "ndcId": self.msg.ndcId, "params": {"threadType": 2}, "id": "2713103"},
+                                          "t": 304}))
             yield
-        finally:    
-            await self.ws.send_str(dumps({"o":{"actions":["Typing"],"target":f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}","ndcId": self.msg.ndcId,"params":{"threadType":2},"id":"2713103"},"t":306}))
+        finally:
+            await self.ws.send_str(dumps({"o": {"actions": ["Typing"],
+                                                "target": f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}",
+                                                "ndcId": self.msg.ndcId, "params": {"threadType": 2}, "id": "2713103"},
+                                          "t": 306}))

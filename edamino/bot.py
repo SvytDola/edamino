@@ -24,8 +24,10 @@ ON_READY: Optional[Callable] = None
 class TheCommandAlreadyExists(Exception):
     pass
 
+
 class IsNotCorutineFunction(Exception):
     pass
+
 
 class Bot:
     __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp', 'ws')
@@ -122,7 +124,7 @@ class Bot:
         def register_handler(callback):
             if iscoroutinefunction(callback) is False:
                 raise IsNotCorutineFunction(callback.__name__)
-            
+
             annotations = [annotation for annotation in callback.__annotations__.values()][1:]
             handler = Handler(
                 description=description,
@@ -132,10 +134,10 @@ class Bot:
                 annotations=tuple(annotations)
             )
             ncommand = f"{self.prefix}{command}"
-            
+
             if ncommand in HANDLERS_COMMANDS:
                 raise TheCommandAlreadyExists(ncommand)
-            
+
             HANDLERS_COMMANDS[ncommand] = handler
 
             return callback
@@ -219,7 +221,3 @@ class Bot:
             log.info("Goodbye. ^^")
         finally:
             self.loop.run_until_complete(client.session.close())
-<<<<<<< HEAD
-=======
-
->>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39

@@ -73,15 +73,12 @@ class Client:
         self.set_ndc(com_id)
         self.headers = {
             "Accept-Language": "en-US",
-<<<<<<< HEAD
-=======
             "Content-Type": api.ContentType.APPLICATION_JSON,
             "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 4 Build/RQ3A"
                           ".211001.001; com.narvii.amino.master/3.4.33598)",
             "Host": "service.narvii.com",
             "Accept-Encoding": "gzip",
             "Connection": "Keep-Alive",
->>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39
             "NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID
         }
         self.session = session if session is not None else ClientSession(json_serialize=dumps)
@@ -136,15 +133,11 @@ class Client:
             data = dumps(json)
             self.headers['NDC-MSG-SIG'] = self.gen_sig(data)
 
-<<<<<<< HEAD
         if content_type is not None:
             headers = deepcopy(self.headers)
             headers['Content-Type'] = content_type
 
-        async with self.session.request(method=method, url=url, headers=headers, data=data) as resp:
-=======
         async with self.session.request(method=method, url=url, headers=self.headers, data=data) as resp:
->>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39
             response: Dict = await resp.json(loads=loads)
         if resp.status != 200:
             raise api.InvalidRequest(response['api:message'], response['api:statuscode'])
@@ -190,27 +183,8 @@ class Client:
         return await self.request('POST', 'community/leave')
 
     async def upload_media(self, data: bytes, content_type: str) -> str:
-<<<<<<< HEAD
         response = await self.request('POST', "media/upload", data=data, content_type=content_type)
         return response['mediaValue']
-=======
-        headers = {
-            'NDCDEVICEID': self.device_id,
-            'NDCAUTH': f"sid={self.sid}",
-            'Content-Type': content_type
-        }
-
-        async with self.session.post(f"https://service.narvii.com/api/v1/g/s/media/upload",
-                                     headers=headers,
-                                     data=data) as response:
-            text = await response.text()
-
-        if response.status != 200:
-            js_resp: Dict = loads(text)
-            raise api.InvalidRequest(js_resp['api:message'], js_resp['api:statuscode'])
-
-        return loads(text)['mediaValue']
->>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39
 
     async def download_from_link(self, link: str) -> bytes:
         async with self.session.get(link) as response:
@@ -707,11 +681,7 @@ class Client:
             'GET',
             f'chat/chat-bubble?type=all-my-bubbles&start={start}&size={size}'
         )
-<<<<<<< HEAD
         return tuple(map(lambda b: objects.ChatBubble(**b), response["chatBubbleList"]))
-=======
-        return tuple(map(lambda b: objects.ChatBubble(**b), response["objects.ChatBubbleList"]))
->>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39
 
     async def delete_bubble(self, bubble_id: str) -> Dict:
         return await self.request('DELETE', f'chat/chat-bubble/{bubble_id}')
@@ -730,7 +700,6 @@ class Client:
             f'chat/chat-bubble/templates'
         )
         return tuple(map(lambda t: objects.Template(**t), response['templateList']))
-<<<<<<< HEAD
 
     async def create_bubble(self, template_id: str, config) -> objects.ChatBubble:
         response = await self.request('POST', f'chat/chat-bubble/templates/{template_id}/generate',
@@ -747,5 +716,3 @@ class Client:
         response = await self.request('POST', 'media/upload/target/chat-bubble-thumbnail',
                                       data=image, content_type=api.ContentType.IMAGE_PNG)
         return response['mediaValue']
-=======
->>>>>>> a62cef8317410d60b6e04c2746252c7c5576ab39
