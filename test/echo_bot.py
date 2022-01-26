@@ -1,11 +1,11 @@
-import config
+import config as config
 
 from edamino import Bot, Context, logger
 
 bot = Bot(email=config.EMAIL, password=config.PASSWORD)
 
 
-@bot.on_ready
+@bot.event()
 async def on_ready():
     logger.info('Ready.')
 

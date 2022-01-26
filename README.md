@@ -11,7 +11,7 @@ from edamino import Bot, Context, logger
 bot = Bot(email='email', password='password', prefix="/")
 
 
-@bot.on_ready
+@bot.event()
 async def on_ready():
     logger.info('Ready.')
 

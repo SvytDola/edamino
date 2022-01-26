@@ -9,7 +9,7 @@ from .objects import Message
 from .api import MessageType, MediaType, WebSocketConnectError
 
 from dotenv import load_dotenv
-from asyncio import get_event_loop, AbstractEventLoop
+from asyncio import get_event_loop, AbstractEventLoop, iscoroutinefunction
 from collections import namedtuple
 from typing import Optional, List, Union, Tuple, Dict, Callable
 
@@ -21,8 +21,14 @@ HANDLERS_EVENTS: List[Handler] = []
 ON_READY: Optional[Callable] = None
 
 
+class TheCommandAlreadyExists(Exception):
+    pass
+
+class IsNotCorutineFunction(Exception):
+    pass
+
 class Bot:
-    __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp')
+    __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp', 'ws')
 
     def __init__(self, email: str, password: str, prefix: str = ""):
         self.uid = None
@@ -32,11 +38,12 @@ class Bot:
         self.password = password
         self.prefix = prefix
         self.timestamp = None
+        self.ws = None
 
-    def get_context(self, client: Client, msg: Message):
+    def get_context(self, client: Client, msg: Message, ws):
         client_context = Client(session=client.session, device_id=client.device_id, com_id=msg.ndcId)
         client_context.login_sid(self.sid, self.uid)
-        context = Context(msg=msg, client=client_context)
+        context = Context(msg=msg, client=client_context, ws=ws)
         return context
 
     def check_cfg(self):
@@ -83,6 +90,11 @@ class Bot:
             media_types = [MediaType.TEXT]
 
         def register_handler(callback):
+            global ON_READY
+            if callback.__name__ == "on_ready":
+                ON_READY = callback
+                return callback
+
             handler = Handler(
                 description=None,
                 media_types=tuple(media_types),
@@ -108,6 +120,9 @@ class Bot:
             media_types = [MediaType.TEXT]
 
         def register_handler(callback):
+            if iscoroutinefunction(callback) is False:
+                raise IsNotCorutineFunction(callback.__name__)
+            
             annotations = [annotation for annotation in callback.__annotations__.values()][1:]
             handler = Handler(
                 description=description,
@@ -116,20 +131,25 @@ class Bot:
                 callback=callback,
                 annotations=tuple(annotations)
             )
-            HANDLERS_COMMANDS[f"{self.prefix}{command}"] = handler
+            ncommand = f"{self.prefix}{command}"
+            
+            if ncommand in HANDLERS_COMMANDS:
+                raise TheCommandAlreadyExists(ncommand)
+            
+            HANDLERS_COMMANDS[ncommand] = handler
 
             return callback
 
         return register_handler
 
     async def __call(self, client: Client) -> None:
-        ws = await client.ws_connect()
+        self.ws = await client.ws_connect()
         if ON_READY:
             await ON_READY()
 
         while True:
             try:
-                if ws.closed:
+                if self.ws.closed:
                     if time() - self.timestamp > 60 * 60 * 12:
                         login = await client.login(self.email, self.password)
                         log.info('Login.')
@@ -137,24 +157,24 @@ class Bot:
                         self.uid = login.auid
                         self.update_cfg()
 
-                    ws = await client.ws_connect()
+                    self.ws = await client.ws_connect()
                     log.info('Reconnected.')
 
-                data = await ws.receive_json(loads=loads)
+                data = await self.ws.receive_json(loads=loads)
                 if data['t'] == 1000:
                     msg = Message(**data['o']['chatMessage'], ndcId=data['o']['ndcId'])
 
                     if msg.author.uid != self.uid:
                         for handler in HANDLERS_EVENTS:
                             if msg.type in handler.message_types and msg.mediaType in handler.media_types:
-                                context = self.get_context(client, msg)
+                                context = self.get_context(client, msg, self.ws)
                                 self.loop.create_task(handler.callback(context))
 
                         if msg.content is not None:
                             words = msg.content.split(" ")
                             command = words[0].lower()
                             handler = HANDLERS_COMMANDS[command]
-                            context = self.get_context(client, msg)
+                            context = self.get_context(client, msg, self.ws)
 
                             if '-h' in msg.content:
                                 await context.reply(handler.description)
@@ -173,7 +193,6 @@ class Bot:
                             except ValueError as error:
                                 log.error(repr(error) + f"\nfunction: {handler.callback.__name__}")
                                 continue
-
                             if msg.type in handler.media_types and msg.mediaType in handler.media_types:
                                 self.loop.create_task(handler.callback(*args))
 
@@ -200,8 +219,3 @@ class Bot:
             log.info("Goodbye. ^^")
         finally:
             self.loop.run_until_complete(client.session.close())
-
-    @staticmethod
-    def on_ready(t):
-        global ON_READY
-        ON_READY = t

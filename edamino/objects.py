@@ -638,6 +638,25 @@ class Chat(pydantic.BaseModel):
     createdTime: typing.Any
 
 
+class ChatBubble(pydantic.BaseModel):
+    id: str = pydantic.Field(alias='bubbleId')
+    resourceUrl: str
+    config: typing.Dict
+    color: str = None
+    isNew: bool
+    md5: str
+
+
+class Template(pydantic.BaseModel):
+    backgroundMedia: typing.Tuple
+    color: str
+    config: typing.Dict
+    materialUrl: str
+    name: str
+    com_id: int = pydantic.Field(alias='ndcId')
+    id: str = pydantic.Field(alias='templateId')
+
+
 class Message(pydantic.BaseModel):
     author: typing.Optional[Author]
     mediaValue: typing.Optional[str]
@@ -655,6 +674,7 @@ class Message(pydantic.BaseModel):
     extensions: typing.Optional[typing.Dict]
     ndcId: typing.Optional[int]
     content: typing.Optional[str]
+    chatBubble: typing.Optional[ChatBubble]
 
 
 class Paging(pydantic.BaseModel):

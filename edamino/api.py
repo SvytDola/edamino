@@ -1,22 +1,27 @@
 from base64 import b64encode
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict, Tuple, Union, TypeVar
+from zipfile import ZipFile, ZIP_DEFLATED
+from io import BytesIO
+from ujson import dumps
 
-DEVICE_ID = "327766716D73766C776A6F767078766740676D61696C2E636F6D5DA1DCD8E8E7C6BDDEFD7128E05113FFE25F6239"
+DEVICE_ID = "3298A71AFE0EA0B7EDDAFA2337B38488E23D8060A98946A75EAE99EBE7FA2F0B4D4212428CB8B2253D"
 
 
 class ContentType:
-    AUDIO_AAC = "audio/aac"
-    IMAGE_JPG = "image/jpg"
-    IMAGE_PNG = "image/png",
-    APPLICATION = "application/x-www-form-urlencoded"
-    APPLICATION_JSON = 'application/json; charset=utf-8'
+    AUDIO_AAC: str = "audio/aac"
+    IMAGE_JPG: str = "image/jpg"
+    IMAGE_PNG: str = "image/png"
+    APPLICATION_URL_ENCODED: str = "application/x-www-form-urlencoded"
+    APPLICATION_JSON: str = 'application/json; charset=utf-8'
+    APPLICATION_OCTET_STREAM: str = 'application/octet-stream'
 
 
 class InvalidRequest(Exception):
     def __init__(self, message: str, status: int) -> None:
-        super().__init__(message, status)
+        super().__init__(message)
         self.message = message
         self.status = status
+
 
 class WebSocketConnectError(Exception):
     pass
@@ -200,3 +205,146 @@ class LinkSnippet:
             "mediaUploadValue": self.media_upload_value,
             "mediaUploadValueContentType": self.media_upload_value_content_type
         }
+
+
+Path = TypeVar("Path", bound=str)
+
+
+class Slot:
+    __slots__ = (
+        'image',
+        'x',
+        'y',
+        'align',
+        'sticker_id',
+        'path'
+    )
+
+    def __init__(self,
+                 image: Union[Path, bytes],
+                 align: int,
+                 x: int,
+                 y: int,
+                 sticker_id: Optional[str] = None) -> None:
+        if isinstance(image, str):
+            self.image = File.load(image)
+        self.x = x
+        self.y = y
+        self.align = align
+        self.sticker_id = sticker_id
+        self.path = f"a{self.align}x{self.x}y{self.y}.png"
+
+    def dict(self):
+        return {
+            "y": self.y,
+            "path": self.path,
+            "align": self.align,
+            "x": self.x,
+            "stickerId": self.sticker_id
+        }
+
+
+class AllowedSlot:
+    __slots__ = (
+        'x',
+        'y',
+        'align'
+    )
+    x: int
+    y: int
+    align: int
+
+    def __init__(self, x: int, y: int, align: int):
+        self.x = x
+        self.y = y
+        self.align = align
+
+    def dict(self):
+        return {
+            "y": self.y,
+            "align": self.align,
+            "x": self.x
+        }
+
+
+class ChatBubbleConfig:
+    __slots__ = (
+        'image',
+        'template_id',
+        'name',
+        'cover_image_url',
+        'preview_background_url',
+        'color',
+        'link_color',
+        'slots',
+        'content_insets',
+        'allowed_slots',
+        'zoom_point'
+    )
+
+    def __init__(self,
+                 image_or_path: Union[bytes, Path],
+                 name: Optional[str] = 'Custom bubble',
+                 color: Optional[str] = "#ffffff",
+                 link_color: Optional[str] = '#ffffff',
+                 slots: Optional[Tuple[Slot, ...]] = None,
+                 cover_image_url: Optional[str] = None,
+                 preview_background_url: Optional[str] = None,
+                 allowed_slots: Optional[Tuple[AllowedSlot, ...]] = None,
+                 content_insets: Optional[Tuple[int, int, int, int]] = None,
+                 zoom_point: Optional[Tuple[int, int]] = None,
+                 template_id: Optional[str] = None) -> None:
+
+        if content_insets is None:
+            content_insets = (40, 65, 35, 17)
+
+        if zoom_point is None:
+            zoom_point = (58, 43)
+
+        self.content_insets = content_insets
+        self.image = image_or_path
+        self.template_id = template_id
+        self.name = name
+        self.cover_image_url = cover_image_url
+        self.preview_background_url = preview_background_url
+        self.color = color
+        self.link_color = link_color
+        self.slots = slots
+        self.content_insets = content_insets
+        self.allowed_slots = allowed_slots
+        self.zoom_point = zoom_point
+
+    def get_zip(self) -> bytes:
+        config = {
+            "templateId": self.template_id,
+            "contentInsets": self.content_insets,
+            "coverImage": self.cover_image_url,
+            "id": "a7ee5618-a7aa-47ed-b68d-80088a0606e6",
+            "name": self.name,
+            "previewBackgroundUrl": self.preview_background_url,
+            "slots": (slot.dict() for slot in self.slots) if self.slots is not None else None,
+            "version": 1,
+            "vertexInset": 0,
+            "bubbleType": 1,
+            "zoomPoint": self.zoom_point,
+            'authors': 'Svyt Dola#2666 & Resq#5909',
+            "color": self.color,
+            "linkColor": self.link_color,
+            "allowedSlots": (slot.dict() for slot in self.allowed_slots) if self.allowed_slots else None,
+        }
+        fm = BytesIO()
+
+        with ZipFile(fm, 'w', ZIP_DEFLATED) as zip_arc:
+            if isinstance(self.image, str):
+                zip_arc.write(self.image)
+                config["backgroundPath"] = self.image
+            else:
+                zip_arc.writestr('background.png', self.image)
+                config["backgroundPath"] = 'background.png'
+            zip_arc.writestr('config.json', dumps(config).encode())
+
+            if self.slots is not None:
+                for slot in self.slots:
+                    zip_arc.writestr(slot.path, slot.image)
+
+        return fm.getvalue()

@@ -1,19 +1,20 @@
-from typing import Optional
-
 from .client import Client
 from .objects import Message
 from .api import Embed, LinkSnippet
 from typing import (
-    List
+    List,
+    Optional
 )
-
+from contextlib import asynccontextmanager
+from ujson import dumps
 
 class Context:
-    __slots__ = ('msg', 'client')
+    __slots__ = ('msg', 'client', 'ws')
 
-    def __init__(self, msg: Message, client: Client) -> None:
+    def __init__(self, msg: Message, client: Client, ws) -> None:
         self.msg = msg
         self.client = client
+        self.ws = ws
 
     async def reply(self,
                     message: str,
@@ -99,3 +100,11 @@ class Context:
 
     async def get_user_blogs(self, start: int = 0, size: int = 25):
         return await self.client.get_user_blogs(self.msg.author.uid, start=start, size=size)
+    
+    @asynccontextmanager
+    async def typing(self):
+        try:    
+            await self.ws.send_str(dumps({"o":{"actions":["Typing"],"target":f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}","ndcId": self.msg.ndcId,"params":{"threadType":2},"id":"2713103"},"t":304}))
+            yield
+        finally:    
+            await self.ws.send_str(dumps({"o":{"actions":["Typing"],"target":f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}","ndcId": self.msg.ndcId,"params":{"threadType":2},"id":"2713103"},"t":306}))

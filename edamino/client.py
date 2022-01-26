@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from edamino import objects, api
 from ujson import dumps, loads
 from aiohttp import (
@@ -10,7 +12,9 @@ from typing import (
     Dict,
     Tuple,
     List,
-    Literal, Any
+    Literal,
+    Any,
+    Union
 )
 from time import time, timezone
 from base64 import b64encode
@@ -69,11 +73,6 @@ class Client:
         self.set_ndc(com_id)
         self.headers = {
             "Accept-Language": "en-US",
-            "Content-Type": api.ContentType.APPLICATION_JSON,
-            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 4 Build/RQ3A.211001.001; com.narvii.amino.master/3.4.33598)",
-            "Host": "service.narvii.com",
-            "Accept-Encoding": "gzip",
-            "Connection": "Keep-Alive",
             "NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID
         }
         self.session = session if session is not None else ClientSession(json_serialize=dumps)
@@ -111,11 +110,16 @@ class Client:
                       method: Literal['POST', 'GET', 'DELETE', 'PUT'],
                       url: str,
                       json: Optional[Dict] = None,
-                      full_url: bool = False) -> Dict:
+                      full_url: bool = False,
+                      data: Optional[Union[str, bytes]] = None,
+                      content_type: Optional[str] = None) -> Dict:
+
         """
         Sending requests in amino.
         """
-        data: Optional[str] = None
+
+        headers = self.headers
+
         if not full_url:
             url = f"https://service.narvii.com/api/v1/{self.ndc_id}/s/{url}"
         if json is not None:
@@ -123,11 +127,14 @@ class Client:
             data = dumps(json)
             self.headers['NDC-MSG-SIG'] = self.gen_sig(data)
 
-        async with self.session.request(method=method, url=url, headers=self.headers, data=data) as resp:
-            response: str = await resp.json(loads=loads)
-        if resp.status != 200:
-            raise api.InvalidRequest(response['api:message'], response['api:status'])
+        if content_type is not None:
+            headers = deepcopy(self.headers)
+            headers['Content-Type'] = content_type
 
+        async with self.session.request(method=method, url=url, headers=headers, data=data) as resp:
+            response: Dict = await resp.json(loads=loads)
+        if resp.status != 200:
+            raise api.InvalidRequest(response['api:message'], response['api:statuscode'])
         return response
 
     async def login(self, email: str, password: str) -> objects.Login:
@@ -170,28 +177,16 @@ class Client:
         return await self.request('POST', 'community/leave')
 
     async def upload_media(self, data: bytes, content_type: str) -> str:
-        headers = {
-            'NDCDEVICEID': self.device_id,
-            'NDCAUTH': f"sid={self.sid}",
-            'Content-Type': content_type
-        }
-
-        async with self.session.post(f"https://service.narvii.com/api/v1/g/s/media/upload",
-                                     headers=headers,
-                                     data=data) as response:
-            text = await response.text()
-
-        if response.status != 200:
-            raise api.InvalidRequest(text)
-
-        return loads(text)['mediaValue']
+        response = await self.request('POST', "media/upload", data=data, content_type=content_type)
+        return response['mediaValue']
 
     async def download_from_link(self, link: str) -> bytes:
         async with self.session.get(link) as response:
             f = await response.read()
 
         if response.status != 200:
-            raise api.InvalidRequest("Unable to upload file")
+            js_resp: Dict = loads(await response.text())
+            raise api.InvalidRequest(js_resp['api:message'], js_resp['api:statuscode'])
 
         return f
 
@@ -335,8 +330,9 @@ class Client:
         )
         return tuple(map(lambda user: objects.UserProfile(**user), response['memberList']))
 
-    async def get_message_info(self):
-        pass
+    async def get_message_info(self, chat_id: str, message_id: str) -> objects.Message:
+        response = await self.request('GET', f'chat/thread/{chat_id}/message/{message_id}')
+        return objects.Message(**response['message'])
 
     async def get_blog_info(self, blog_id: str) -> objects.Blog:
         response = await self.request('GET', f'blog/{blog_id}')
@@ -673,3 +669,44 @@ class Client:
 
     async def leave_chat(self, chat_id: str):
         return await self.request('DELETE', f'chat/thread/{chat_id}/member/{self.uid}')
+
+    async def get_bubbles(self, start: int = 0, size: int = 25) -> Tuple[objects.ChatBubble, ...]:
+        response = await self.request(
+            'GET',
+            f'chat/chat-bubble?type=all-my-bubbles&start={start}&size={size}'
+        )
+        return tuple(map(lambda b: objects.ChatBubble(**b), response["chatBubbleList"]))
+
+    async def delete_bubble(self, bubble_id: str) -> Dict:
+        return await self.request('DELETE', f'chat/chat-bubble/{bubble_id}')
+
+    async def set_bubble(self, chat_id: str, bubble_id: str, apply_to_all: bool = False) -> Dict:
+        data = {
+            "bubbleId": bubble_id,
+            "applyToAll": 1 if apply_to_all else 0,
+            "threadId": chat_id,
+        }
+        return await self.request('POST', f'chat/thread/apply-bubble', json=data)
+
+    async def get_templates(self):
+        response = await self.request(
+            'GET',
+            f'chat/chat-bubble/templates'
+        )
+        return tuple(map(lambda t: objects.Template(**t), response['templateList']))
+
+    async def create_bubble(self, template_id: str, config) -> objects.ChatBubble:
+        response = await self.request('POST', f'chat/chat-bubble/templates/{template_id}/generate',
+                                      data=config.get_zip(),
+                                      content_type=api.ContentType.APPLICATION_OCTET_STREAM)
+        return objects.ChatBubble(**response['chatBubble'])
+
+    async def update_bubble(self, bubble_id: str, config):
+        response = await self.request('POST', f'chat/chat-bubble/{bubble_id}', data=config.get_zip(),
+                                      content_type=api.ContentType.APPLICATION_OCTET_STREAM)
+        return objects.ChatBubble(**response['chatBubble'])
+
+    async def upload_image_bubble(self, image: bytes) -> str:
+        response = await self.request('POST', 'media/upload/target/chat-bubble-thumbnail',
+                                      data=image, content_type=api.ContentType.IMAGE_PNG)
+        return response['mediaValue']

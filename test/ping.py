@@ -5,14 +5,15 @@ from edamino import Bot, Context, logger
 bot = Bot(email=config.EMAIL, password=config.PASSWORD, prefix="/")
 
 
-@bot.on_ready
+@bot.event()
 async def on_ready():
     logger.info('Ready.')
 
 
 @bot.command('ping')
-async def echo(ctx: Context):
-    await ctx.reply('Pong!')
+async def on_ping(ctx: Context):
+    async with ctx.typing():
+        await ctx.reply('Pong!')
 
 
 if __name__ == '__main__':
