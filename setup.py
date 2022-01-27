@@ -5,7 +5,7 @@ with open('README.md', 'r') as stream:
 
 setup(
     name='ed-amino',
-    version='0.7.2.0',
+    version='0.7.2.1',
     url='https://github.com/SvytDola/edamino',
     license='MIT',
     author='SvytDola',

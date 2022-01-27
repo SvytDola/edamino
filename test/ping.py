@@ -42,5 +42,10 @@ async def on_speed(ctx: Context):
 async def on_send(ctx: Context, coins: int, link: str):
     await ctx.reply(f'{coins} {link}')
 
+
+@bot.command(['chank', 'chong'], prefix='.')
+async def on(ctx: Context, args: str):
+    await ctx.reply(args)
+
 if __name__ == '__main__':
     bot.start()
