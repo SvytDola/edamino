@@ -7,14 +7,15 @@ Async api for amino
 ### Example Bot.
 ```py
 from edamino import Bot, Context, logger
+from edamino.objects import UserProfile
 
 bot = Bot(email='email', password='password', prefix="/")
 
 
 @bot.event()
-async def on_ready():
-    logger.info('Ready.')
-
+async def on_ready(profile: UserProfile):
+    logger.info(f'{profile.nickname} ready')
+    
 
 @bot.command('ping')
 async def echo(ctx: Context):

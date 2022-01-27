@@ -103,7 +103,7 @@ class Context:
         return await self.client.get_user_blogs(self.msg.author.uid, start=start, size=size)
 
     @asynccontextmanager
-    async def typing(self, chat_type: Literal[0, 1, 2]):
+    async def typing(self, chat_type: Literal[0, 1, 2] = 2):
         data = {
             "o": {
                 "actions": ["Typing"],
@@ -115,6 +115,27 @@ class Context:
             "t": 304
         }
 
+        try:
+            await self.ws.send_str(dumps(data))
+            yield
+        finally:
+            data['t'] = 306
+            await self.ws.send_str(dumps(data))
+
+    @asynccontextmanager
+    async def recording(self, chat_type: int = 2):
+        data = {
+            "o": {
+                "actions": ["Recording"],
+                "target": f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId}",
+                "ndcId": self.msg.ndcId,
+                "params": {
+                    "threadType": chat_type
+                },
+                "id": "161486614"
+            },
+            "t": 304
+        }
         try:
             await self.ws.send_str(dumps(data))
             yield

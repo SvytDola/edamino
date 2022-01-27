@@ -5,20 +5,25 @@ from ujson import loads
 from .client import Client
 from .logger import logger as log
 from .context import Context
-from .objects import Message
+from .objects import Message, UserProfile
 from .api import MessageType, MediaType, WebSocketConnectError
 
 from dotenv import load_dotenv
 from asyncio import get_event_loop, AbstractEventLoop, iscoroutinefunction
 from collections import namedtuple
-from typing import Optional, List, Union, Tuple, Dict, Callable
+from typing import Optional, List, Union, Tuple, Dict, Callable, Awaitable
+from functools import partial
 
 load_dotenv('.env')
 
 Handler = namedtuple('Handler', ['media_types', 'message_types', 'callback', 'description', 'annotations'])
 HANDLERS_COMMANDS: Dict[str, Handler] = {}
 HANDLERS_EVENTS: List[Handler] = []
-ON_READY: Optional[Callable] = None
+
+ON_READY: Optional[Callable[[UserProfile], Awaitable[None]]] = None
+ON_MENTION: Optional[Callable] = None
+
+ON_REPLY: Optional[Callable] = None
 
 
 class TheCommandAlreadyExists(Exception):
@@ -92,9 +97,16 @@ class Bot:
             media_types = [MediaType.TEXT]
 
         def register_handler(callback):
-            global ON_READY
-            if callback.__name__ == "on_ready":
+            global ON_READY, ON_MENTION, ON_REPLY
+
+            name_callback = callback.__name__
+
+            if name_callback == "on_ready":
                 ON_READY = callback
+                return callback
+
+            if name_callback == "on_mention":
+                ON_MENTION = callback
                 return callback
 
             handler = Handler(
@@ -145,12 +157,19 @@ class Bot:
         return register_handler
 
     async def __call(self, client: Client) -> None:
+        timestamp: int = int(time())
         self.ws = await client.ws_connect()
+
         if ON_READY:
             await ON_READY()
 
         while True:
             try:
+                if int(time()) - timestamp >= 180:
+                    self.ws = await client.ws_connect()
+                    log.info('Reconnected.')
+                    timestamp = int(time())
+
                 if self.ws.closed:
                     if time() - self.timestamp > 60 * 60 * 12:
                         login = await client.login(self.email, self.password)
@@ -167,6 +186,18 @@ class Bot:
                     msg = Message(**data['o']['chatMessage'], ndcId=data['o']['ndcId'])
 
                     if msg.author.uid != self.uid:
+
+                        if ON_MENTION is not None:
+                            try:
+                                uids = (u.uid for u in msg.extensions.mentionedArray)
+                            except AttributeError:
+                                uids = []
+                            try:
+                                if self.uid in uids or self.uid == msg.extensions.replyMessage.author.uid:
+                                    self.loop.create_task(ON_MENTION(self.get_context(client, msg, self.ws)))
+                            except AttributeError:
+                                pass
+
                         for handler in HANDLERS_EVENTS:
                             if msg.type in handler.message_types and msg.mediaType in handler.media_types:
                                 context = self.get_context(client, msg, self.ws)
@@ -202,20 +233,28 @@ class Bot:
                 continue
 
     def start(self, loop: Optional[AbstractEventLoop] = None, device_id: Optional[str] = None) -> None:
+        global ON_READY
         self.check_cfg()
         self.loop = loop if loop is not None else get_event_loop()
 
         client = Client(device_id=device_id)
         try:
+            profile: UserProfile
             if self.sid is None:
                 login = self.loop.run_until_complete(client.login(self.email, self.password))
                 self.sid = login.sid
                 self.uid = login.auid
                 log.info("Update config.")
                 self.update_cfg()
+                profile = login.userProfile
+            else:
+                profile = self.loop.run_until_complete(client.get_user_info(self.uid))
 
             client.sid = self.sid
             client.uid = self.uid
+
+            ON_READY = partial(ON_READY, profile)
+
             self.loop.run_until_complete(self.__call(client))
         except KeyboardInterrupt:
             log.info("Goodbye. ^^")

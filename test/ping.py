@@ -1,20 +1,46 @@
+import time
+
 import config
+import random
 
 from edamino import Bot, Context, logger
+from edamino.objects import UserProfile
 
-bot = Bot(email=config.EMAIL, password=config.PASSWORD, prefix="/")
+bot = Bot(email=config.EMAIL, password=config.PASSWORD, prefix="")
 
 
 @bot.event()
-async def on_ready():
-    logger.info('Ready.')
+async def on_ready(profile: UserProfile):
+    logger.info(f'{profile.nickname} ready.')
+
+
+@bot.event()
+async def on_mention(ctx: Context):
+    await ctx.reply('lala')
 
 
 @bot.command('ping')
 async def on_ping(ctx: Context):
-    async with ctx.typing():
+    async with ctx.recording():
         await ctx.reply('Pong!')
 
+
+@bot.command('бибаметр')
+async def on_biba(ctx: Context):
+    async with ctx.typing():
+        await ctx.reply(f'Ваш размер {random.randint(1, 10000)} см.')
+
+
+@bot.command('speedtest')
+async def on_speed(ctx: Context):
+    timestamp = time.time()
+    await ctx.reply('.')
+    await ctx.reply(f'Время обработки {time.time() - timestamp:.2f}s.')
+
+
+@bot.command('send')
+async def on_send(ctx: Context, coins: int, link: str):
+    await ctx.reply(f'{coins} {link}')
 
 if __name__ == '__main__':
     bot.start()

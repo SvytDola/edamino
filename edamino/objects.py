@@ -1,702 +1,716 @@
-import pydantic
-import typing
-
-
-class UserProfileExtensions(pydantic.BaseModel):
-    privilegeOfCommentOnUserProfile: typing.Optional[int]
-    customTitles: typing.Optional[typing.Tuple]
-
-
-class AvatarFrame(pydantic.BaseModel):
-    status: typing.Optional[int]
-    ownershipStatus: typing.Any
-    version: typing.Optional[int]
-    resourceUrl: typing.Optional[str]
-    name: typing.Optional[str]
-    icon: typing.Optional[str]
-    frameType: typing.Optional[int]
-    frameId: typing.Optional[str]
-
-
-class Author(pydantic.BaseModel):
-    status: typing.Optional[int]
-    isNicknameVerified: typing.Optional[bool]
-    uid: typing.Optional[str]
-    level: typing.Optional[int]
-    followingStatus: typing.Optional[int]
-    accountMembershipStatus: typing.Optional[int]
-    isGlobal: typing.Optional[bool]
-    membershipStatus: typing.Optional[int]
-    reputation: typing.Optional[int]
-    role: typing.Optional[int]
-    ndcId: typing.Optional[int]
-    membersCount: typing.Optional[int]
-    nickname: typing.Optional[str]
-    icon: typing.Optional[str]
-    avatarFrame: typing.Optional[AvatarFrame]
-
-
-class UserProfile(pydantic.BaseModel):
-    status: typing.Optional[int]
-    moodSticker: typing.Any
-    itemsCount: typing.Optional[int]
-    consecutiveCheckInDays: typing.Any
-    uid: typing.Optional[str]
-    modifiedTime: typing.Optional[str]
-    followingStatus: typing.Optional[int]
-    onlineStatus: typing.Optional[int]
-    accountMembershipStatus: typing.Optional[int]
-    isGlobal: typing.Optional[bool]
-    avatarFrameId: typing.Optional[str]
-    reputation: typing.Optional[int]
-    postsCount: typing.Optional[int]
-    avatarFrame: typing.Optional[AvatarFrame]
-    membersCount: typing.Optional[int]
-    nickname: typing.Optional[str]
-    mediaList: typing.Any
-    icon: typing.Optional[str]
-    isNicknameVerified: typing.Optional[bool]
-    mood: typing.Any
-    level: typing.Optional[int]
-    notificationSubscriptionStatus: typing.Optional[int]
-    pushEnabled: typing.Optional[bool]
-    membershipStatus: typing.Optional[int]
-    content: typing.Any
-    joinedCount: typing.Optional[int]
-    role: typing.Optional[int]
-    commentsCount: typing.Optional[int]
-    aminoId: typing.Optional[str]
-    ndcId: typing.Optional[int]
-    createdTime: typing.Optional[str]
-    userProfileExtensions: typing.Optional[UserProfileExtensions]
-    storiesCount: typing.Optional[int]
-    blogsCount: typing.Optional[int]
-
-
-class DeviceInfo(pydantic.BaseModel):
-    lastClientType: typing.Optional[int]
-
-
-class AdvancedSettings(pydantic.BaseModel):
-    analyticsEnabled: typing.Optional[int]
-
-
-class AccountExtensions(pydantic.BaseModel):
-    adsFlags: typing.Optional[int]
-
-
-class Account(pydantic.BaseModel):
-    adsLevel: typing.Optional[int]
-    deviceInfo: typing.Optional[DeviceInfo]
-    mediaLabAdsMigrationJuly2020: typing.Optional[bool]
-    avatarFrameId: typing.Optional[str]
-    mediaLabAdsMigrationAugust2020: typing.Optional[bool]
-    adsEnabled: typing.Optional[bool]
-
-    username: typing.Any
-    status: typing.Optional[int]
-    uid: typing.Optional[str]
-    modifiedTime: typing.Optional[str]
-    twitterID: typing.Any
-    activation: typing.Optional[int]
-    phoneNumberActivation: typing.Optional[int]
-    emailActivation: typing.Optional[int]
-    appleID: typing.Any
-    facebookID: typing.Any
-    nickname: typing.Optional[str]
-    mediaList: typing.Any
-    googleID: typing.Any
-    icon: typing.Optional[str]
-    securityLevel: typing.Optional[int]
-    phoneNumber: typing.Optional[str]
-    membership: typing.Any
-    advancedSettings: typing.Optional[AdvancedSettings]
-    role: typing.Optional[int]
-    aminoIdEditable: typing.Optional[bool]
-    aminoId: typing.Optional[str]
-    createdTime: typing.Optional[str]
-    extensions: typing.Optional[AccountExtensions]
-    email: typing.Optional[str]
-
-
-class Login(pydantic.BaseModel):
-    auid: typing.Optional[str]
-    account: typing.Optional[Account]
-    secret: typing.Optional[str]
-    apiMessage: typing.Optional[str] = pydantic.Field(alias='api:message')
-    sid: typing.Optional[str]
-    apiStatuscode: typing.Optional[int] = pydantic.Field(alias='api:statuscode')
-    apiDuration: typing.Optional[str] = pydantic.Field(alias='api:duration')
-    apiTimestamp: typing.Optional[str] = pydantic.Field(alias='api:timestamp')
-    userProfile: typing.Optional[UserProfile]
-
-
-class LinkInfo(pydantic.BaseModel):
-    objectId: typing.Optional[str]
-    targetCode: typing.Optional[int]
-    ndcId: typing.Optional[int]
-    fullPath: typing.Any
-    shortCode: typing.Any
-    objectType: typing.Optional[int]
-    shareURLShortCode: typing.Optional[str]
-    targetCode: typing.Optional[int]
-    ndcId: typing.Optional[int]
-    fullPath: typing.Optional[str]
-    shareURLFullPath: typing.Optional[str]
-
-
-class Agent(pydantic.BaseModel):
-    status: typing.Any
-    ndcId: typing.Any
-    membersCount: typing.Optional[int]
-    icon: typing.Any
-    uid: typing.Optional[str]
-    followingStatus: typing.Optional[int]
-    level: typing.Optional[int]
-    nickname: typing.Any
-    isNicknameVerified: typing.Optional[bool]
-    accountMembershipStatus: typing.Optional[int]
-    membershipStatus: typing.Optional[int]
-    isGlobal: typing.Optional[bool]
-    reputation: typing.Optional[int]
-    role: typing.Any
+from __future__ import annotations
+from typing import List, Dict, Optional, Any, Tuple
+from pydantic import BaseModel, Field
+
+
+class UserProfileExtensions(BaseModel):
+    privilegeOfCommentOnUserProfile: Optional[int]
+    customTitles: Optional[Tuple]
+
+
+class AvatarFrame(BaseModel):
+    status: Optional[int]
+    ownershipStatus: Any
+    version: Optional[int]
+    resourceUrl: Optional[str]
+    name: Optional[str]
+    icon: Optional[str]
+    frameType: Optional[int]
+    frameId: Optional[str]
+
+
+class Author(BaseModel):
+    status: Optional[int]
+    isNicknameVerified: Optional[bool]
+    uid: Optional[str]
+    level: Optional[int]
+    followingStatus: Optional[int]
+    accountMembershipStatus: Optional[int]
+    isGlobal: Optional[bool]
+    membershipStatus: Optional[int]
+    reputation: Optional[int]
+    role: Optional[int]
+    ndcId: Optional[int]
+    membersCount: Optional[int]
+    nickname: Optional[str]
+    icon: Optional[str]
+    avatarFrame: Optional[AvatarFrame]
+
+
+class UserProfile(BaseModel):
+    status: Optional[int]
+    moodSticker: Any
+    itemsCount: Optional[int]
+    consecutiveCheckInDays: Any
+    uid: Optional[str]
+    modifiedTime: Optional[str]
+    followingStatus: Optional[int]
+    onlineStatus: Optional[int]
+    accountMembershipStatus: Optional[int]
+    isGlobal: Optional[bool]
+    avatarFrameId: Optional[str]
+    reputation: Optional[int]
+    postsCount: Optional[int]
+    avatarFrame: Optional[AvatarFrame]
+    membersCount: Optional[int]
+    nickname: Optional[str]
+    mediaList: Any
+    icon: Optional[str]
+    isNicknameVerified: Optional[bool]
+    mood: Any
+    level: Optional[int]
+    notificationSubscriptionStatus: Optional[int]
+    pushEnabled: Optional[bool]
+    membershipStatus: Optional[int]
+    content: Any
+    joinedCount: Optional[int]
+    role: Optional[int]
+    commentsCount: Optional[int]
+    aminoId: Optional[str]
+    ndcId: Optional[int]
+    createdTime: Optional[str]
+    userProfileExtensions: Optional[UserProfileExtensions]
+    storiesCount: Optional[int]
+    blogsCount: Optional[int]
+
+
+class DeviceInfo(BaseModel):
+    lastClientType: Optional[int]
+
+
+class AdvancedSettings(BaseModel):
+    analyticsEnabled: Optional[int]
+
+
+class AccountExtensions(BaseModel):
+    adsFlags: Optional[int]
+
+
+class Account(BaseModel):
+    adsLevel: Optional[int]
+    deviceInfo: Optional[DeviceInfo]
+    mediaLabAdsMigrationJuly2020: Optional[bool]
+    avatarFrameId: Optional[str]
+    mediaLabAdsMigrationAugust2020: Optional[bool]
+    adsEnabled: Optional[bool]
+
+    username: Any
+    status: Optional[int]
+    uid: Optional[str]
+    modifiedTime: Optional[str]
+    twitterID: Any
+    activation: Optional[int]
+    phoneNumberActivation: Optional[int]
+    emailActivation: Optional[int]
+    appleID: Any
+    facebookID: Any
+    nickname: Optional[str]
+    mediaList: Any
+    googleID: Any
+    icon: Optional[str]
+    securityLevel: Optional[int]
+    phoneNumber: Optional[str]
+    membership: Any
+    advancedSettings: Optional[AdvancedSettings]
+    role: Optional[int]
+    aminoIdEditable: Optional[bool]
+    aminoId: Optional[str]
+    createdTime: Optional[str]
+    extensions: Optional[AccountExtensions]
+    email: Optional[str]
+
+
+class Login(BaseModel):
+    auid: Optional[str]
+    account: Optional[Account]
+    secret: Optional[str]
+    apiMessage: Optional[str] = Field(alias='api:message')
+    sid: Optional[str]
+    apiStatuscode: Optional[int] = Field(alias='api:statuscode')
+    apiDuration: Optional[str] = Field(alias='api:duration')
+    apiTimestamp: Optional[str] = Field(alias='api:timestamp')
+    userProfile: Optional[UserProfile]
+
+
+class LinkInfo(BaseModel):
+    objectId: Optional[str]
+    targetCode: Optional[int]
+    ndcId: Optional[int]
+    fullPath: Any
+    shortCode: Any
+    objectType: Optional[int]
+    shareURLShortCode: Optional[str]
+    targetCode: Optional[int]
+    ndcId: Optional[int]
+    fullPath: Optional[str]
+    shareURLFullPath: Optional[str]
+
+
+class Agent(BaseModel):
+    status: Any
+    ndcId: Any
+    membersCount: Optional[int]
+    icon: Any
+    uid: Optional[str]
+    followingStatus: Optional[int]
+    level: Optional[int]
+    nickname: Any
+    isNicknameVerified: Optional[bool]
+    accountMembershipStatus: Optional[int]
+    membershipStatus: Optional[int]
+    isGlobal: Optional[bool]
+    reputation: Optional[int]
+    role: Any
 
 
-class Ranking(pydantic.BaseModel):
-    leaderboardEnabled: typing.Optional[bool]
-    rankingTable: typing.Optional[typing.Tuple]
-    defaultLeaderboardType: typing.Optional[int]
-    leaderboardList: typing.Optional[typing.Tuple]
-    enabled: typing.Optional[bool]
+class Ranking(BaseModel):
+    leaderboardEnabled: Optional[bool]
+    rankingTable: Optional[Tuple]
+    defaultLeaderboardType: Optional[int]
+    leaderboardList: Optional[Tuple]
+    enabled: Optional[bool]
 
 
-class Influencer(pydantic.BaseModel):
-    maxVipNumbers: typing.Optional[int]
-    enabled: typing.Optional[bool]
-    maxVipMonthlyFee: typing.Optional[int]
-    minVipMonthlyFee: typing.Optional[int]
-    lock: typing.Optional[bool]
+class Influencer(BaseModel):
+    maxVipNumbers: Optional[int]
+    enabled: Optional[bool]
+    maxVipMonthlyFee: Optional[int]
+    minVipMonthlyFee: Optional[int]
+    lock: Optional[bool]
 
 
-class PublicChatPrivilege(pydantic.BaseModel):
-    minLevel: typing.Optional[int]
-    type: typing.Optional[int]
+class PublicChatPrivilege(BaseModel):
+    minLevel: Optional[int]
+    type: Optional[int]
 
 
-class PublicChat(pydantic.BaseModel):
-    publicChatPrivilege: typing.Optional[PublicChatPrivilege]
-    enabled: typing.Optional[bool]
+class PublicChat(BaseModel):
+    publicChatPrivilege: Optional[PublicChatPrivilege]
+    enabled: Optional[bool]
 
 
-class AvChat(pydantic.BaseModel):
-    screeningRoomEnabled: typing.Optional[bool]
-    audioEnabled: typing.Optional[bool]
-    videoEnabled: typing.Optional[bool]
-    audio2Enabled: typing.Optional[bool]
+class AvChat(BaseModel):
+    screeningRoomEnabled: Optional[bool]
+    audioEnabled: Optional[bool]
+    videoEnabled: Optional[bool]
+    audio2Enabled: Optional[bool]
 
 
-class ModuleChat(pydantic.BaseModel):
-    enabled: typing.Optional[bool]
-    spamProtectionEnabled: typing.Optional[bool]
-    avChat: typing.Optional[AvChat]
-    publicChat: typing.Optional[PublicChat]
+class ModuleChat(BaseModel):
+    enabled: Optional[bool]
+    spamProtectionEnabled: Optional[bool]
+    avChat: Optional[AvChat]
+    publicChat: Optional[PublicChat]
 
 
-class TopicCategories(pydantic.BaseModel):
-    enabled: typing.Optional[bool]
+class TopicCategories(BaseModel):
+    enabled: Optional[bool]
 
 
-class Featured(pydantic.BaseModel):
-    layout: typing.Optional[int]
-    publicChatRoomEnabled: typing.Optional[bool]
-    memberEnabled: typing.Optional[bool]
-    enabled: typing.Optional[bool]
-    lockMember: typing.Optional[bool]
-    postEnabled: typing.Optional[bool]
+class Featured(BaseModel):
+    layout: Optional[int]
+    publicChatRoomEnabled: Optional[bool]
+    memberEnabled: Optional[bool]
+    enabled: Optional[bool]
+    lockMember: Optional[bool]
+    postEnabled: Optional[bool]
 
 
-class CatalogPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class CatalogPrivilege(BaseModel):
+    type: Optional[int]
 
 
-class Catalog(pydantic.BaseModel):
-    curationEnabled: typing.Optional[bool]
-    catalogPrivilege: typing.Optional[CatalogPrivilege]
-    enabled: typing.Optional[bool]
+class Catalog(BaseModel):
+    curationEnabled: Optional[bool]
+    catalogPrivilege: Optional[CatalogPrivilege]
+    enabled: Optional[bool]
 
 
-class UploadPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
-    minLevel: typing.Optional[int]
+class UploadPrivilege(BaseModel):
+    type: Optional[int]
+    minLevel: Optional[int]
 
 
-class AlbumManagePrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
-    minLevel: typing.Optional[int]
+class AlbumManagePrivilege(BaseModel):
+    type: Optional[int]
+    minLevel: Optional[int]
 
 
-class SharedFolder(pydantic.BaseModel):
-    enabled: typing.Optional[bool]
-    albumManagePrivilege: typing.Optional[AlbumManagePrivilege]
-    uploadPrivilege: typing.Optional[UploadPrivilege]
+class SharedFolder(BaseModel):
+    enabled: Optional[bool]
+    albumManagePrivilege: Optional[AlbumManagePrivilege]
+    uploadPrivilege: Optional[UploadPrivilege]
 
 
-class ExternalContent(pydantic.BaseModel):
-    enabled: typing.Optional[bool]
+class ExternalContent(BaseModel):
+    enabled: Optional[bool]
 
 
-class PollPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class PollPrivilege(BaseModel):
+    type: Optional[int]
 
 
-class Poll(pydantic.BaseModel):
-    pollPrivilege: typing.Optional[PollPrivilege]
-    enabled: typing.Optional[bool]
+class Poll(BaseModel):
+    pollPrivilege: Optional[PollPrivilege]
+    enabled: Optional[bool]
 
 
-class LiveModePrivilege(pydantic.BaseModel):
-    minLevel: typing.Optional[int]
-    type: typing.Optional[int]
+class LiveModePrivilege(BaseModel):
+    minLevel: Optional[int]
+    type: Optional[int]
 
 
-class LiveMode(pydantic.BaseModel):
-    liveModePrivilege: typing.Optional[LiveModePrivilege]
-    enabled: typing.Optional[bool]
+class LiveMode(BaseModel):
+    liveModePrivilege: Optional[LiveModePrivilege]
+    enabled: Optional[bool]
 
 
-class QuizPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class QuizPrivilege(BaseModel):
+    type: Optional[int]
 
 
-class Quiz(pydantic.BaseModel):
-    enabled: typing.Optional[bool]
-    quizPrivilege: typing.Optional[QuizPrivilege]
+class Quiz(BaseModel):
+    enabled: Optional[bool]
+    quizPrivilege: Optional[QuizPrivilege]
 
 
-class StoryPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class StoryPrivilege(BaseModel):
+    type: Optional[int]
 
 
-class Story(pydantic.BaseModel):
-    enabled: typing.Optional[bool]
-    storyPrivilege: typing.Optional[StoryPrivilege]
+class Story(BaseModel):
+    enabled: Optional[bool]
+    storyPrivilege: Optional[StoryPrivilege]
 
 
-class PublicChatRoomsPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
-    minLevel: typing.Optional[int]
+class PublicChatRoomsPrivilege(BaseModel):
+    type: Optional[int]
+    minLevel: Optional[int]
 
 
-class PublicChatRooms(pydantic.BaseModel):
-    publicChatRoomsPrivilege: typing.Optional[PublicChatRoomsPrivilege]
-    enabled: typing.Optional[bool]
+class PublicChatRooms(BaseModel):
+    publicChatRoomsPrivilege: Optional[PublicChatRoomsPrivilege]
+    enabled: Optional[bool]
 
 
-class CatalogEntryPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class CatalogEntryPrivilege(BaseModel):
+    type: Optional[int]
 
 
-class CatalogEntry(pydantic.BaseModel):
-    catalogEntryPrivilege: typing.Optional[CatalogEntryPrivilege]
-    enabled: typing.Optional[bool]
+class CatalogEntry(BaseModel):
+    catalogEntryPrivilege: Optional[CatalogEntryPrivilege]
+    enabled: Optional[bool]
 
 
-class BlogPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class BlogPrivilege(BaseModel):
+    type: Optional[int]
 
 
-class TipCustomOption(pydantic.BaseModel):
-    value: typing.Any
-    icon: typing.Optional[str]
+class TipCustomOption(BaseModel):
+    value: Any
+    icon: Optional[str]
 
 
-class TipOptionList(pydantic.BaseModel):
-    value: typing.Optional[int]
-    icon: typing.Optional[str]
+class TipOptionList(BaseModel):
+    value: Optional[int]
+    icon: Optional[str]
 
 
-class TipInfo(pydantic.BaseModel):
-    tipOptionList: typing.Optional[typing.Tuple[TipOptionList, ...]]
-    tipMaxCoin: typing.Optional[int]
-    tippersCount: typing.Optional[int]
-    tippable: typing.Optional[bool]
-    tipMinCoin: typing.Optional[int]
-    tipCustomOption: typing.Optional[TipCustomOption]
-    tippedCoins: typing.Optional[float]
+class TipInfo(BaseModel):
+    tipOptionList: Optional[Tuple[TipOptionList, ...]]
+    tipMaxCoin: Optional[int]
+    tippersCount: Optional[int]
+    tippable: Optional[bool]
+    tipMinCoin: Optional[int]
+    tipCustomOption: Optional[TipCustomOption]
+    tippedCoins: Optional[float]
 
 
-class BlogExtensionsStyle(pydantic.BaseModel):
-    backgroundColor: typing.Optional[str]
+class BlogExtensionsStyle(BaseModel):
+    backgroundColor: Optional[str]
 
 
-class BlogExtensions(pydantic.BaseModel):
-    style: typing.Optional[BlogExtensionsStyle]
-    fansOnly: typing.Optional[bool]
+class BlogExtensions(BaseModel):
+    style: Optional[BlogExtensionsStyle]
+    fansOnly: Optional[bool]
 
 
-class Blog(pydantic.BaseModel):
-    globalVotesCount: typing.Optional[int]
-    globalVotedValue: typing.Optional[int]
-    votedValue: typing.Optional[int]
-    keywords: typing.Optional[str]
-    strategyInfo: typing.Optional[str]
-    mediaList: typing.Optional[typing.Tuple]
-    style: typing.Optional[int]
-    totalQuizPlayCount: typing.Optional[int]
-    title: typing.Optional[str]
-    tipInfo: typing.Optional[TipInfo]
-    contentRating: typing.Optional[int]
-    content: typing.Optional[str]
-    needHidden: typing.Optional[bool]
-    guestVotesCount: typing.Optional[int]
-    type: typing.Optional[int]
-    status: typing.Optional[int]
-    globalCommentsCount: typing.Optional[int]
-    modifiedTime: typing.Optional[str]
-    widgetDisplayInterval: typing.Any
-    totalPollVoteCount: typing.Optional[int]
-    blogId: typing.Optional[str]
-    viewCount: typing.Optional[int]
-    author: typing.Optional[Author]
-    extensions: typing.Optional[BlogExtensions]
-    votesCount: typing.Optional[int]
-    ndcId: typing.Optional[int]
-    createdTime: typing.Optional[str]
-    endTime: typing.Any
-    commentsCount: typing.Optional[int]
+class Blog(BaseModel):
+    globalVotesCount: Optional[int]
+    globalVotedValue: Optional[int]
+    votedValue: Optional[int]
+    keywords: Optional[str]
+    strategyInfo: Optional[str]
+    mediaList: Optional[Tuple]
+    style: Optional[int]
+    totalQuizPlayCount: Optional[int]
+    title: Optional[str]
+    tipInfo: Optional[TipInfo]
+    contentRating: Optional[int]
+    content: Optional[str]
+    needHidden: Optional[bool]
+    guestVotesCount: Optional[int]
+    type: Optional[int]
+    status: Optional[int]
+    globalCommentsCount: Optional[int]
+    modifiedTime: Optional[str]
+    widgetDisplayInterval: Any
+    totalPollVoteCount: Optional[int]
+    blogId: Optional[str]
+    viewCount: Optional[int]
+    author: Optional[Author]
+    extensions: Optional[BlogExtensions]
+    votesCount: Optional[int]
+    ndcId: Optional[int]
+    createdTime: Optional[str]
+    endTime: Any
+    commentsCount: Optional[int]
 
 
-class ScreeningRoomPrivilege(pydantic.BaseModel):
-    minLevel: typing.Optional[int]
-    type: typing.Optional[int]
+class ScreeningRoomPrivilege(BaseModel):
+    minLevel: Optional[int]
+    type: Optional[int]
 
 
-class ScreeningRoom(pydantic.BaseModel):
-    screeningRoomPrivilege: typing.Optional[ScreeningRoomPrivilege]
-    enabled: typing.Optional[bool]
+class ScreeningRoom(BaseModel):
+    screeningRoomPrivilege: Optional[ScreeningRoomPrivilege]
+    enabled: Optional[bool]
 
 
-class QuestionPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class QuestionPrivilege(BaseModel):
+    type: Optional[int]
 
 
-class Question(pydantic.BaseModel):
-    enabled: typing.Optional[bool]
-    questionPrivilege: typing.Optional[QuestionPrivilege]
+class Question(BaseModel):
+    enabled: Optional[bool]
+    questionPrivilege: Optional[QuestionPrivilege]
 
 
-class WebLinkPrivilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class WebLinkPrivilege(BaseModel):
+    type: Optional[int]
 
 
-class WebLink(pydantic.BaseModel):
-    webLinkPrivilege: typing.Optional[WebLinkPrivilege]
-    enabled: typing.Optional[bool]
+class WebLink(BaseModel):
+    webLinkPrivilege: Optional[WebLinkPrivilege]
+    enabled: Optional[bool]
 
 
-class Privilege(pydantic.BaseModel):
-    type: typing.Optional[int]
+class Privilege(BaseModel):
+    type: Optional[int]
 
 
-class Image(pydantic.BaseModel):
-    enabled: typing.Optional[bool]
-    privilege: typing.Optional[Privilege]
+class Image(BaseModel):
+    enabled: Optional[bool]
+    privilege: Optional[Privilege]
 
 
-class PostType(pydantic.BaseModel):
-    image: typing.Optional[Image]
-    webLink: typing.Optional[WebLink]
-    question: typing.Optional[Question]
-    screeningRoom: typing.Optional[ScreeningRoom]
-    blog: typing.Optional[Blog]
-    catalogEntry: typing.Optional[CatalogEntry]
-    publicChatRooms: typing.Optional[PublicChatRooms]
-    story: typing.Optional[Story]
-    quiz: typing.Optional[Quiz]
-    liveMode: typing.Optional[LiveMode]
-    poll: typing.Optional[Poll]
+class PostType(BaseModel):
+    image: Optional[Image]
+    webLink: Optional[WebLink]
+    question: Optional[Question]
+    screeningRoom: Optional[ScreeningRoom]
+    blog: Optional[Blog]
+    catalogEntry: Optional[CatalogEntry]
+    publicChatRooms: Optional[PublicChatRooms]
+    story: Optional[Story]
+    quiz: Optional[Quiz]
+    liveMode: Optional[LiveMode]
+    poll: Optional[Poll]
 
 
-class Post(pydantic.BaseModel):
-    postType: typing.Optional[PostType]
-    enabled: typing.Optional[bool]
+class Post(BaseModel):
+    postType: Optional[PostType]
+    enabled: Optional[bool]
 
 
-class Module(pydantic.BaseModel):
-    post: typing.Optional[Post]
-    externalContent: typing.Optional[ExternalContent]
-    sharedFolder: typing.Optional[SharedFolder]
-    catalog: typing.Optional[Catalog]
-    featured: typing.Optional[Featured]
-    topicCategories: typing.Optional[TopicCategories]
-    chat: typing.Optional[ModuleChat]
-    influencer: typing.Optional[Influencer]
-    ranking: typing.Optional[Ranking]
+class Module(BaseModel):
+    post: Optional[Post]
+    externalContent: Optional[ExternalContent]
+    sharedFolder: Optional[SharedFolder]
+    catalog: Optional[Catalog]
+    featured: Optional[Featured]
+    topicCategories: Optional[TopicCategories]
+    chat: Optional[ModuleChat]
+    influencer: Optional[Influencer]
+    ranking: Optional[Ranking]
 
 
-class CustomList(pydantic.BaseModel):
-    url: typing.Optional[str]
-    alias: typing.Optional[str]
-    id: typing.Optional[str]
+class CustomList(BaseModel):
+    url: Optional[str]
+    alias: Optional[str]
+    id: Optional[str]
 
 
-class Page(pydantic.BaseModel):
-    customList: typing.Optional[typing.Tuple[CustomList, ...]]
-    defaultList: typing.Optional[typing.Tuple]
+class Page(BaseModel):
+    customList: Optional[Tuple[CustomList, ...]]
+    defaultList: Optional[Tuple]
 
 
-class Level1(pydantic.BaseModel):
-    id: typing.Optional[str]
+class Level1(BaseModel):
+    id: Optional[str]
 
 
-class Level2(pydantic.BaseModel):
-    id: typing.Optional[str]
+class Level2(BaseModel):
+    id: Optional[str]
 
 
-class LeftSidePanelNavigation(pydantic.BaseModel):
-    level2: typing.Optional[typing.Tuple[Level2, ...]]
-    level1: typing.Optional[typing.Tuple[Level1, ...]]
+class LeftSidePanelNavigation(BaseModel):
+    level2: Optional[Tuple[Level2, ...]]
+    level1: Optional[Tuple[Level1, ...]]
 
 
-class Style(pydantic.BaseModel):
-    iconColor: typing.Any
+class Style(BaseModel):
+    iconColor: Any
 
 
-class LeftSidePanel(pydantic.BaseModel):
-    style: typing.Optional[Style]
-    leftSidePanelNavigation: typing.Optional[LeftSidePanelNavigation]
+class LeftSidePanel(BaseModel):
+    style: Optional[Style]
+    leftSidePanelNavigation: Optional[LeftSidePanelNavigation]
 
 
-class HomePage(pydantic.BaseModel):
-    navigation: typing.Optional[typing.Tuple]
+class HomePage(BaseModel):
+    navigation: Optional[Tuple]
 
 
-class Appearance(pydantic.BaseModel):
-    homePage: typing.Optional[HomePage]
-    leftSidePanel: typing.Optional[LeftSidePanel]
+class Appearance(BaseModel):
+    homePage: Optional[HomePage]
+    leftSidePanel: Optional[LeftSidePanel]
 
 
-class WelcomeMessage(pydantic.BaseModel):
-    text: typing.Any
-    enabled: typing.Any
+class WelcomeMessage(BaseModel):
+    text: Any
+    enabled: Any
 
 
-class General(pydantic.BaseModel):
-    premiumFeatureEnabled: typing.Optional[bool]
-    accountMembershipEnabled: typing.Optional[bool]
-    disableLiveLayerVisible: typing.Optional[bool]
-    onlyAllowOfficialTag: typing.Optional[bool]
-    welcomeMessage: typing.Optional[WelcomeMessage]
-    facebookAppIdList: typing.Any
-    videoUploadPolicy: typing.Optional[int]
-    invitePermission: typing.Optional[int]
-    disableLiveLayerActive: typing.Optional[bool]
-    joinedTopicIdList: typing.Optional[typing.Tuple]
-    joinedBaselineCollectionIdList: typing.Optional[typing.Tuple]
-    disableLocation: typing.Optional[bool]
-    hasPendingReviewRequest: typing.Optional[bool]
+class General(BaseModel):
+    premiumFeatureEnabled: Optional[bool]
+    accountMembershipEnabled: Optional[bool]
+    disableLiveLayerVisible: Optional[bool]
+    onlyAllowOfficialTag: Optional[bool]
+    welcomeMessage: Optional[WelcomeMessage]
+    facebookAppIdList: Any
+    videoUploadPolicy: Optional[int]
+    invitePermission: Optional[int]
+    disableLiveLayerActive: Optional[bool]
+    joinedTopicIdList: Optional[Tuple]
+    joinedBaselineCollectionIdList: Optional[Tuple]
+    disableLocation: Optional[bool]
+    hasPendingReviewRequest: Optional[bool]
 
 
-class Configuration(pydantic.BaseModel):
-    general: typing.Optional[General]
-    appearance: typing.Optional[Appearance]
-    page: typing.Optional[Page]
-    module: typing.Optional[Module]
+class Configuration(BaseModel):
+    general: Optional[General]
+    appearance: Optional[Appearance]
+    page: Optional[Page]
+    module: Optional[Module]
 
 
-class ThemePack(pydantic.BaseModel):
-    themePackRevision: typing.Optional[int]
-    themePackUrl: typing.Optional[str]
-    themeColor: typing.Optional[str]
-    themePackHash: typing.Optional[str]
+class ThemePack(BaseModel):
+    themePackRevision: Optional[int]
+    themePackUrl: Optional[str]
+    themeColor: Optional[str]
+    themePackHash: Optional[str]
 
 
-class CommunityAdvancedSettings(pydantic.BaseModel):
-    rankingTable: typing.Optional[typing.Tuple]
-    leaderboardStyle: typing.Optional[typing.Dict]
-    catalogEnabled: typing.Optional[bool]
-    joinedBaselineCollectionIdList: typing.Optional[typing.Tuple]
-    defaultRankingTypeInLeaderboard: typing.Optional[int]
-    newsfeedPages: typing.Optional[typing.Tuple]
-    hasPendingReviewRequest: typing.Optional[bool]
-    welcomeMessageEnabled: typing.Any
-    facebookAppIdList: typing.Any
-    frontPageLayout: typing.Optional[int]
-    pollMinFullBarVoteCount: typing.Optional[int]
-    welcomeMessageText: typing.Any
+class CommunityAdvancedSettings(BaseModel):
+    rankingTable: Optional[Tuple]
+    leaderboardStyle: Optional[Dict]
+    catalogEnabled: Optional[bool]
+    joinedBaselineCollectionIdList: Optional[Tuple]
+    defaultRankingTypeInLeaderboard: Optional[int]
+    newsfeedPages: Optional[Tuple]
+    hasPendingReviewRequest: Optional[bool]
+    welcomeMessageEnabled: Any
+    facebookAppIdList: Any
+    frontPageLayout: Optional[int]
+    pollMinFullBarVoteCount: Optional[int]
+    welcomeMessageText: Any
 
 
-class Community(pydantic.BaseModel):
-    probationStatus: typing.Optional[int]
-    keywords: typing.Any
-    themePack: typing.Optional[ThemePack]
-    listedStatus: typing.Optional[int]
-    endpoint: typing.Optional[str]
-    userAddedTopicList: typing.Any
-    templateId: typing.Optional[int]
-    joinType: typing.Optional[int]
-    searchable: typing.Optional[bool]
-    advancedSettings: typing.Optional[CommunityAdvancedSettings]
-    promotionalMediaList: typing.Any
-    ndcId: typing.Optional[int]
-    membersCount: typing.Optional[int]
-    activeInfo: typing.Optional[typing.Dict]
-    configuration: typing.Optional[Configuration]
-    agent: typing.Optional[Agent]
-    extensions: typing.Any
-    createdTime: typing.Optional[str]
-    mediaList: typing.Any
-    name: typing.Optional[str]
-    primaryLanguage: typing.Optional[str]
-    isStandaloneAppMonetizationEnabled: typing.Optional[bool]
-    icon: typing.Optional[str]
-    isStandaloneAppDeprecated: typing.Optional[bool]
-    tagline: typing.Optional[str]
-    content: typing.Any
-    communityHeat: typing.Optional[int]
-    link: typing.Optional[str]
-    modifiedTime: typing.Optional[str]
-    status: typing.Optional[int]
+class Community(BaseModel):
+    probationStatus: Optional[int]
+    keywords: Any
+    themePack: Optional[ThemePack]
+    listedStatus: Optional[int]
+    endpoint: Optional[str]
+    userAddedTopicList: Any
+    templateId: Optional[int]
+    joinType: Optional[int]
+    searchable: Optional[bool]
+    advancedSettings: Optional[CommunityAdvancedSettings]
+    promotionalMediaList: Any
+    ndcId: Optional[int]
+    membersCount: Optional[int]
+    activeInfo: Optional[Dict]
+    configuration: Optional[Configuration]
+    agent: Optional[Agent]
+    extensions: Any
+    createdTime: Optional[str]
+    mediaList: Any
+    name: Optional[str]
+    primaryLanguage: Optional[str]
+    isStandaloneAppMonetizationEnabled: Optional[bool]
+    icon: Optional[str]
+    isStandaloneAppDeprecated: Optional[bool]
+    tagline: Optional[str]
+    content: Any
+    communityHeat: Optional[int]
+    link: Optional[str]
+    modifiedTime: Optional[str]
+    status: Optional[int]
 
 
-class LinkInfoExtensions(pydantic.BaseModel):
-    community: typing.Optional[Community]
-    linkInfo: typing.Optional[LinkInfo]
+class LinkInfoExtensions(BaseModel):
+    community: Optional[Community]
+    linkInfo: Optional[LinkInfo]
 
 
-class LinkInfoV2(pydantic.BaseModel):
-    path: typing.Optional[str]
-    extensions: typing.Optional[LinkInfoExtensions]
+class LinkInfoV2(BaseModel):
+    path: Optional[str]
+    extensions: Optional[LinkInfoExtensions]
 
 
-class BaseLinkInfo(pydantic.BaseModel):
-    apiStatuscode: typing.Optional[int] = pydantic.Field(alias='api:statuscode')
-    apiDuration: typing.Optional[str] = pydantic.Field(alias='api:duration')
-    apiMessage: typing.Optional[str] = pydantic.Field(alias='api:message')
-    linkInfoV2: typing.Optional[LinkInfoV2]
-    apiTimestamp: typing.Optional[str] = pydantic.Field(alias='api:timestamp')
+class BaseLinkInfo(BaseModel):
+    apiStatuscode: Optional[int] = Field(alias='api:statuscode')
+    apiDuration: Optional[str] = Field(alias='api:duration')
+    apiMessage: Optional[str] = Field(alias='api:message')
+    linkInfoV2: Optional[LinkInfoV2]
+    apiTimestamp: Optional[str] = Field(alias='api:timestamp')
 
 
-class ChatExtensions(pydantic.BaseModel):
-    viewOnly: typing.Optional[bool]
-    coHost: typing.Optional[typing.Tuple[str, ...]]
-    membersCanInvite: typing.Optional[bool]
-    language: typing.Optional[str]
-    bm: typing.Optional[typing.Tuple]
-    lastMembersSummaryUpdateTime: typing.Optional[int]
-    fansOnly: typing.Optional[bool]
-    channelType: typing.Optional[int]
+class ChatExtensions(BaseModel):
+    viewOnly: Optional[bool]
+    coHost: Optional[Tuple[str, ...]]
+    membersCanInvite: Optional[bool]
+    language: Optional[str]
+    bm: Optional[Tuple]
+    lastMembersSummaryUpdateTime: Optional[int]
+    fansOnly: Optional[bool]
+    channelType: Optional[int]
 
 
-class LastMessageSummary(pydantic.BaseModel):
-    uid: typing.Optional[str]
-    type: typing.Optional[int]
-    mediaType: typing.Optional[int]
-    content: typing.Optional[str]
-    messageId: typing.Optional[str]
-    createdTime: typing.Optional[str]
-    isHidden: typing.Optional[bool]
-    mediaValue: typing.Any
+class LastMessageSummary(BaseModel):
+    uid: Optional[str]
+    type: Optional[int]
+    mediaType: Optional[int]
+    content: Optional[str]
+    messageId: Optional[str]
+    createdTime: Optional[str]
+    isHidden: Optional[bool]
+    mediaValue: Any
 
 
-class MembersSummary(pydantic.BaseModel):
-    status: typing.Optional[int]
-    uid: typing.Optional[str]
-    membershipStatus: typing.Optional[int]
-    role: typing.Optional[int]
-    nickname: typing.Optional[str]
-    icon: typing.Optional[str]
+class MembersSummary(BaseModel):
+    status: Optional[int]
+    uid: Optional[str]
+    membershipStatus: Optional[int]
+    role: Optional[int]
+    nickname: Optional[str]
+    icon: Optional[str]
 
 
-class Chat(pydantic.BaseModel):
-    userAddedTopicList: typing.Optional[typing.Tuple]
-    uid: typing.Optional[str]
-    membersQuota: typing.Optional[int]
-    membersSummary: typing.Optional[typing.Tuple[MembersSummary, ...]]
-    threadId: typing.Optional[str]
-    keywords: typing.Any
-    membersCount: typing.Optional[int]
-    strategyInfo: typing.Optional[str]
-    isPinned: typing.Optional[bool]
-    title: typing.Optional[str]
-    membershipStatus: typing.Optional[int]
-    content: typing.Optional[str]
-    needHidden: typing.Optional[bool]
-    alertOption: typing.Optional[int]
-    lastReadTime: typing.Optional[str]
-    type: typing.Optional[int]
-    status: typing.Optional[int]
-    publishToGlobal: typing.Optional[int]
-    modifiedTime: typing.Any
-    lastMessageSummary: typing.Optional[LastMessageSummary]
-    condition: typing.Optional[int]
-    icon: typing.Optional[str]
-    latestActivityTime: typing.Optional[str]
-    author: typing.Optional[Author]
-    extensions: typing.Optional[ChatExtensions]
-    ndcId: typing.Optional[int]
-    createdTime: typing.Any
+class Chat(BaseModel):
+    userAddedTopicList: Optional[Tuple]
+    uid: Optional[str]
+    membersQuota: Optional[int]
+    membersSummary: Optional[Tuple[MembersSummary, ...]]
+    threadId: Optional[str]
+    keywords: Any
+    membersCount: Optional[int]
+    strategyInfo: Optional[str]
+    isPinned: Optional[bool]
+    title: Optional[str]
+    membershipStatus: Optional[int]
+    content: Optional[str]
+    needHidden: Optional[bool]
+    alertOption: Optional[int]
+    lastReadTime: Optional[str]
+    type: Optional[int]
+    status: Optional[int]
+    publishToGlobal: Optional[int]
+    modifiedTime: Any
+    lastMessageSummary: Optional[LastMessageSummary]
+    condition: Optional[int]
+    icon: Optional[str]
+    latestActivityTime: Optional[str]
+    author: Optional[Author]
+    extensions: Optional[ChatExtensions]
+    ndcId: Optional[int]
+    createdTime: Any
 
 
-class ChatBubble(pydantic.BaseModel):
-    id: str = pydantic.Field(alias='bubbleId')
+class ChatBubble(BaseModel):
+    id: str = Field(alias='bubbleId')
     resourceUrl: str
-    config: typing.Dict
+    config: Dict
     color: str = None
     isNew: bool
     md5: str
 
 
-class Template(pydantic.BaseModel):
-    backgroundMedia: typing.Tuple
+class Template(BaseModel):
+    backgroundMedia: Tuple
     color: str
-    config: typing.Dict
+    config: Dict
     materialUrl: str
     name: str
-    com_id: int = pydantic.Field(alias='ndcId')
-    id: str = pydantic.Field(alias='templateId')
+    com_id: int = Field(alias='ndcId')
+    id: str = Field(alias='templateId')
 
 
-class Message(pydantic.BaseModel):
-    author: typing.Optional[Author]
-    mediaValue: typing.Optional[str]
-    threadId: typing.Optional[str]
-    mediaType: typing.Optional[int]
-    clientRefId: typing.Optional[int]
-    messageId: typing.Optional[str]
-    uid: typing.Optional[str]
-    createdTime: typing.Optional[str]
-    type: typing.Optional[int]
-    isHidden: typing.Optional[bool]
-    includedInSummary: typing.Optional[bool]
-    chatBubbleId: typing.Optional[str]
-    chatBubbleVersion: typing.Optional[int]
-    extensions: typing.Optional[typing.Dict]
-    ndcId: typing.Optional[int]
-    content: typing.Optional[str]
-    chatBubble: typing.Optional[ChatBubble]
+class Mention(BaseModel):
+    uid: str
+
+class Message(BaseModel):
+    author: Optional[Author]
+    mediaValue: Optional[str]
+    threadId: Optional[str]
+    mediaType: Optional[int]
+    clientRefId: Optional[int]
+    messageId: Optional[str]
+    uid: Optional[str]
+    createdTime: Optional[str]
+    type: Optional[int]
+    isHidden: Optional[bool]
+    includedInSummary: Optional[bool]
+    chatBubbleId: Optional[str]
+    chatBubbleVersion: Optional[int]
+    extensions: Optional[Extensions]
+    ndcId: Optional[int]
+    content: Optional[str]
+    chatBubble: Optional[ChatBubble]
 
 
-class Paging(pydantic.BaseModel):
-    nextPageToken: typing.Optional[str]
-    prevPageToken: typing.Optional[str]
+class Extensions(BaseModel):
+    replyMessageId: Optional[str]
+    replyMessage: Optional[Message]
+    mentionedArray: Optional[Tuple[Mention, ...]]
 
 
-class Messages(pydantic.BaseModel):
-    messageList: typing.Optional[typing.Tuple[Chat, ...]]
-    paging: typing.Optional[Paging]
-    apiMessage: typing.Optional[str] = pydantic.Field(alias='api:message')
-    apiStatuscode: typing.Optional[int] = pydantic.Field(alias='api:statuscode')
-    apiDuration: typing.Optional[str] = pydantic.Field(alias='api:duration')
-    apiTimestamp: typing.Optional[str] = pydantic.Field(alias='api:timestamp')
+
+class Paging(BaseModel):
+    nextPageToken: Optional[str]
+    prevPageToken: Optional[str]
 
 
-class WalletInfo(pydantic.BaseModel):
-    adsEnabled: typing.Optional[bool]
-    adsFlags: typing.Optional[int]
-    adsVideoStats: typing.Optional[int]
-    businessCoinsEnabled: typing.Optional[bool]
-    totalBusinessCoins: typing.Optional[int]
-    totalBusinessCoinsFloat: typing.Optional[float]
-    totalCoins: typing.Optional[int]
-    totalCoinsFloat: typing.Optional[float]
+class Messages(BaseModel):
+    messageList: Optional[Tuple[Chat, ...]]
+    paging: Optional[Paging]
+    apiMessage: Optional[str] = Field(alias='api:message')
+    apiStatuscode: Optional[int] = Field(alias='api:statuscode')
+    apiDuration: Optional[str] = Field(alias='api:duration')
+    apiTimestamp: Optional[str] = Field(alias='api:timestamp')
+
+
+class WalletInfo(BaseModel):
+    adsEnabled: Optional[bool]
+    adsFlags: Optional[int]
+    adsVideoStats: Optional[int]
+    businessCoinsEnabled: Optional[bool]
+    totalBusinessCoins: Optional[int]
+    totalBusinessCoinsFloat: Optional[float]
+    totalCoins: Optional[int]
+    totalCoinsFloat: Optional[float]
+
+
+Message.update_forward_refs()

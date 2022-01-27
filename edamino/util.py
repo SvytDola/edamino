@@ -15,7 +15,7 @@ def clear_key(key: str) -> str:
 
 
 def get_normal_name(name: str, name_base_class: str) -> str:
-    name_new_class: str = name.capitalize()
+    name_new_class: str = name[0].upper() + name[1:]
     while True:
         if name_new_class in names_used:
             name_new_class = name_base_class + name_new_class
@@ -38,6 +38,8 @@ def parse_json_to_model(json_object: Dict, name_base_class: str) -> str:
             key = _s
         if isinstance(value, Dict):
             name_new_class: str = get_normal_name(key, name_base_class)
+            print(name_new_class)
+
             string += f'{TAB}{key}: Optional[{name_new_class}]{field}\n'
             classes += parse_json_to_model(value, name_new_class)
         elif isinstance(value, List) or isinstance(value, Tuple):
