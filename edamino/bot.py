@@ -190,12 +190,13 @@ class Bot:
                         if ON_MENTION is not None:
                             try:
                                 uids = (u.uid for u in msg.extensions.mentionedArray)
-                            except AttributeError:
+                            except:
                                 uids = []
+
                             try:
                                 if self.uid in uids or self.uid == msg.extensions.replyMessage.author.uid:
                                     self.loop.create_task(ON_MENTION(self.get_context(client, msg, self.ws)))
-                            except AttributeError:
+                            except:
                                 pass
 
                         for handler in HANDLERS_EVENTS:
