@@ -24,10 +24,11 @@ class ContentType:
 
 
 class InvalidRequest(Exception):
-    def __init__(self, message: str, status: int) -> None:
+    def __init__(self, message: str, status: int, json: Dict) -> None:
         super().__init__(message)
         self.message = message
         self.status = status
+        self.json = json
 
 
 class WebSocketConnectError(Exception):

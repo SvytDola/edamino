@@ -139,7 +139,7 @@ class Client:
         async with self.session.request(method=method, url=url, headers=headers, data=data) as resp:
             response: Dict = await resp.json(loads=loads)
         if resp.status != 200:
-            raise api.InvalidRequest(response['api:message'], response['api:statuscode'])
+            raise api.InvalidRequest(response['api:message'], response['api:statuscode'], response)
         return response
 
     async def login(self, email: str, password: str) -> objects.Login:

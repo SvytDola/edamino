@@ -46,3 +46,4 @@ async def on_send(ctx: Context, coins: int, link: str):
 async def on(ctx: Context, args: str):
     await ctx.reply(args)
 
+bot.start()

@@ -1,5 +1,4 @@
 ![PyPI](https://img.shields.io/pypi/v/ed-amino.svg?style=flat-square) ![PyPI - License](https://img.shields.io/pypi/l/ed-amino.svg?style=flat-square)
-
 # edamino
 Async api for amino
 
