@@ -39,14 +39,14 @@ class ArgumentsNotFound(Exception):
     pass
 
 
-def get_annotations(handler: Handler, words: List[str], command: str) -> List:
+def get_annotations(handler: Handler, words: List[str], command: str, message: str) -> List:
     args = []
     if 'args' not in handler.callback.__code__.co_varnames:
         annotations = [i for i in handler.callback.__annotations__.values()][1:]
         if annotations:
             keys = [v for v in handler.callback.__annotations__.keys()]
             if words:
-                for word, annotation in zip(words, annotations):
+                for word, annotation in zip(words[1:], annotations):
                     args.append(annotation(word))
 
             len_anno = len(annotations)
@@ -57,7 +57,7 @@ def get_annotations(handler: Handler, words: List[str], command: str) -> List:
 
         return args
     else:
-        return [' '.join(words)]
+        return [message.replace(words[0], '', 1)]
 
 
 class Bot:
@@ -204,7 +204,7 @@ class Bot:
                         self.loop.create_task(handler.callback(context))
 
                 if msg.content is not None:
-                    words = msg.content.split(" ")
+                    words = msg.content.split()
                     command = words[0].lower()
 
                     for handler in HANDLERS_COMMANDS:
@@ -216,7 +216,7 @@ class Bot:
                             args = [context]
 
                             try:
-                                args += get_annotations(handler, words[1:], command)
+                                args += get_annotations(handler, words, command, msg.content)
                             except ValueError as error:
                                 log.error(repr(error) + f"\nfunction: {handler.callback.__name__}")
                                 continue

@@ -1,12 +1,11 @@
 import time
 
-import config
 import random
 
-from edamino import Bot, Context, logger
+from edamino import Context, logger
 from edamino.objects import UserProfile
 
-bot = Bot(email=config.EMAIL, password=config.PASSWORD, prefix="")
+from config import bot
 
 
 @bot.event()
@@ -47,5 +46,3 @@ async def on_send(ctx: Context, coins: int, link: str):
 async def on(ctx: Context, args: str):
     await ctx.reply(args)
 
-if __name__ == '__main__':
-    bot.start()

@@ -1,5 +1,4 @@
-from copy import deepcopy
-
+from copy import copy
 from edamino import objects, api
 from ujson import dumps, loads
 from aiohttp import (
@@ -131,13 +130,13 @@ class Client:
         if json is not None:
             json['timestamp'] = get_timestamp()
             data = dumps(json)
-            self.headers['NDC-MSG-SIG'] = self.gen_sig(data)
+            headers['NDC-MSG-SIG'] = self.gen_sig(data)
 
         if content_type is not None:
-            headers = deepcopy(self.headers)
+            headers = copy(self.headers)
             headers['Content-Type'] = content_type
 
-        async with self.session.request(method=method, url=url, headers=self.headers, data=data) as resp:
+        async with self.session.request(method=method, url=url, headers=headers, data=data) as resp:
             response: Dict = await resp.json(loads=loads)
         if resp.status != 200:
             raise api.InvalidRequest(response['api:message'], response['api:statuscode'])
@@ -278,7 +277,7 @@ class Client:
             "NDCDEVICEID": self.device_id,
             "NDC-MSG-SIG": self.gen_sig(url)
         }
-        for i in range(1, 5):
+        for i in range(4, 0, -1):
             try:
                 return await self.session.ws_connect(
                     f"wss://ws{i}.narvii.com/?signbody={self.device_id}%7C{timestamp}",
@@ -344,15 +343,9 @@ class Client:
         response = await self.request('GET', f'blog/{blog_id}')
         return objects.Blog(**response['blog'])
 
-    async def get_wiki_info(self, wiki_id: str) -> Dict:
+    async def get_wiki_info(self, wiki_id: str) -> objects.Wiki:
         response = await self.request('GET', f'item/{wiki_id}')
-        return response
-
-    async def post_blog(self):
-        pass
-
-    async def post_wiki(self):
-        pass
+        return objects.Wiki(**response['item'])
 
     async def check_in(self, tz: int = -timezone // 1000) -> Dict:
         data = {"timezone": tz}
@@ -692,13 +685,10 @@ class Client:
             "applyToAll": 1 if apply_to_all else 0,
             "threadId": chat_id,
         }
-        return await self.request('POST', f'chat/thread/apply-bubble', json=data)
+        return await self.request('POST', 'chat/thread/apply-bubble', json=data)
 
     async def get_templates(self):
-        response = await self.request(
-            'GET',
-            f'chat/chat-bubble/templates'
-        )
+        response = await self.request('GET', 'chat/chat-bubble/templates')
         return tuple(map(lambda t: objects.Template(**t), response['templateList']))
 
     async def create_bubble(self, template_id: str, config) -> objects.ChatBubble:
@@ -716,3 +706,161 @@ class Client:
         response = await self.request('POST', 'media/upload/target/chat-bubble-thumbnail',
                                       data=image, content_type=api.ContentType.IMAGE_PNG)
         return response['mediaValue']
+
+    async def delete_invite_code(self, invite_id: str) -> Dict:
+        return await self.request('DELETE', f"community/invitation/{invite_id}")
+
+    async def delete_blog(self, blog_id: str) -> Dict:
+        return await self.request('DELETE', f"blog/{blog_id}")
+
+    async def delete_wiki(self, wiki_id: str) -> Dict:
+        return await self.request('DELETE', f"item/{wiki_id}")
+
+    async def post_blog(self,
+                        title: str,
+                        content: str,
+                        image_list: Optional[List[str]] = None,
+                        caption_list: Optional[List] = None,
+                        categories_list: Optional[List] = None,
+                        backgroundColor: Optional[str] = None,
+                        fansOnly: bool = False,
+                        extensions: Optional[Dict] = None) -> objects.Blog:
+
+        media_list: Optional[List] = None
+
+        if caption_list and image_list:
+            media_list = [[100, image, caption] for image, caption in zip(image_list, caption_list)]
+
+        elif image_list:
+            media_list = [[100, image, None] for image in image_list]
+
+        data = {
+            "address": None,
+            "content": content,
+            "title": title,
+            "mediaList": media_list,
+            "extensions": extensions,
+            "latitude": 0,
+            "longitude": 0,
+            "eventSource": api.SourceTypes.GLOBAL_COMPOSE
+        }
+
+        if fansOnly:
+            data["extensions"] = {"fansOnly": fansOnly}
+        if backgroundColor:
+            data["extensions"] = {"style": {"backgroundColor": backgroundColor}}
+        if categories_list:
+            data["taggedBlogCategoryIdList"] = categories_list
+
+        response = await self.request('POST', f"blog", data)
+        return objects.Blog(**response['blog'])
+
+    async def post_wiki(self,
+                        title: str,
+                        content: Optional[str],
+                        icon: Optional[str] = None,
+                        image_list: Optional[List[str]] = None,
+                        keywords: Optional[str] = None,
+                        backgroundColor: Optional[str] = None,
+                        fansOnly: bool = False) -> objects.Wiki:
+
+        media_list = [[100, image, None] for image in image_list] if image_list is not None else None
+
+        data: Dict[str, Any] = {
+            "label": title,
+            "content": content,
+            "mediaList": media_list,
+            "eventSource": api.SourceTypes.GLOBAL_COMPOSE
+        }
+
+        if icon:
+            data["icon"] = icon
+        if keywords:
+            data["keywords"] = keywords
+        if fansOnly:
+            data["extensions"] = {"fansOnly": fansOnly}
+        if backgroundColor:
+            data["extensions"] = {"style": {"backgroundColor": backgroundColor}}
+
+        response = await self.request('POST', "item", data)
+        return objects.Wiki(**response)
+
+    async def edit_blog(self,
+                        blogId: str,
+                        title: Optional[str] = None,
+                        content: Optional[str] = None,
+                        image_list: Optional[list] = None,
+                        categories_list: Optional[list] = None,
+                        background_color: Optional[str] = None,
+                        fans_only: bool = False) -> Dict:
+        media_list = [[100, image, None] for image in image_list]
+
+        data: Dict[str, Any] = {
+            "address": None,
+            "mediaList": media_list,
+            "latitude": 0,
+            "longitude": 0,
+            "eventSource": "PostDetailView"
+        }
+
+        if title:
+            data["title"] = title
+        if content:
+            data["content"] = content
+        if fans_only:
+            data["extensions"] = {"fansOnly": fans_only}
+        if background_color:
+            data["extensions"] = {"style": {"backgroundColor": background_color}}
+        if categories_list:
+            data["taggedBlogCategoryIdList"] = categories_list
+
+        response = await self.request('POST', "blog/{blogId}", data)
+        return response
+
+    async def repost_blog(self,
+                          content: Optional[str] = None,
+                          blogId: Optional[str] = None,
+                          wikiId: Optional[str] = None) -> objects.Blog:
+        if blogId:
+            refObjectId, refObjectType = blogId, api.ObjectTypes.BLOG
+        elif wikiId:
+            refObjectId, refObjectType = wikiId, api.ObjectTypes.ITEM
+        else:
+            raise api.SpecifyType()
+
+        data = {
+            "content": content,
+            "refObjectId": refObjectId,
+            "refObjectType": refObjectType,
+            "type": 2
+        }
+
+        response = await self.request('POST', "blog", data)
+        return objects.Blog(**response['blog'])
+
+    async def get_public_chats(self, start: int = 0, size: int = 25) -> Tuple[objects.Chat]:
+        response = await self.request('GET', f"live-layer/public-chats?start={start}&size={size}")
+        return tuple(map(lambda o: objects.Chat(**o), response["threadList"]))
+
+    async def get_user_wikis(self, user_id: str, start: int = 0, size: int = 25) -> Tuple[objects.Wiki]:
+        response = await self.request('GET', f"item?type=user-all&start={start}&size={size}&cv=1.2&uid={user_id}")
+        return tuple(map(lambda o: objects.Wiki(**o), response["itemList"]))
+
+    async def ban(self, user_id: str, reason: str, ban_type: int = None) -> Dict:
+        data = {
+            "reasonType": ban_type,
+            "note": {
+                "content": reason
+            }
+        }
+        response = await self.request('POST', f"user-profile/{user_id}/ban", data)
+        return response
+
+    async def unban(self, user_id: str, reason: str) -> Dict:
+        data = {
+            "note": {
+                "content": reason
+            }
+        }
+        response = await self.request('POST', f"user-profile/{user_id}/unban", data)
+        return response

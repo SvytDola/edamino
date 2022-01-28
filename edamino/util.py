@@ -38,8 +38,6 @@ def parse_json_to_model(json_object: Dict, name_base_class: str) -> str:
             key = _s
         if isinstance(value, Dict):
             name_new_class: str = get_normal_name(key, name_base_class)
-            print(name_new_class)
-
             string += f'{TAB}{key}: Optional[{name_new_class}]{field}\n'
             classes += parse_json_to_model(value, name_new_class)
         elif isinstance(value, List) or isinstance(value, Tuple):
@@ -63,8 +61,8 @@ def parse(json_dict: Dict, name_base_class: str, add_import_string: bool = True,
     name_base_class = get_normal_name(name_base_class, name_base_class)
     string = ''
     if add_import_string is True:
-        string += 'from pydantic import BaseModel, Field\nfrom typing import Optional, Tuple, List, Dict\n\n\n'
+        string += 'from pydantic import BaseModel, Field\nfrom typing import Optional, Tuple, List, Dict, Any\n\n\n'
     string += parse_json_to_model(json_dict, name_base_class)
     if clear_list_named_used is True:
         names_used.clear()
-    return string.replace('list', 'List').replace('tuple', 'Tuple').replace('dict', 'Dict')
+    return string.replace('list', 'List').replace('tuple', 'Tuple').replace('dict', 'Dict').replace('NoneType', 'Any')

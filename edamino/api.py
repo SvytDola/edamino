@@ -7,6 +7,12 @@ from ujson import dumps
 DEVICE_ID = "3298A71AFE0EA0B7EDDAFA2337B38488E23D8060A98946A75EAE99EBE7FA2F0B4D4212428CB8B2253D"
 
 
+class SourceTypes:
+    USER_PROFILE: str = "UserProfileView"
+    DETAIL_POST: str = "PostDetailView"
+    GLOBAL_COMPOSE: str = "GlobalComposeMenu"
+
+
 class ContentType:
     AUDIO_AAC: str = "audio/aac"
     IMAGE_JPG: str = "image/jpg"
@@ -25,6 +31,10 @@ class InvalidRequest(Exception):
 
 
 class WebSocketConnectError(Exception):
+    pass
+
+
+class SpecifyType(Exception):
     pass
 
 
@@ -349,3 +359,41 @@ class ChatBubbleConfig:
                     zip_arc.writestr(slot.path, slot.image)
 
         return fm.getvalue()
+
+
+class ObjectTypes:
+    USER: int = 0
+    BLOG: int = 1
+    ITEM: int = 2
+    COMMENT: int = 3
+    BLOG_CATEGORY: int = 4
+    BLOG_CATEGORY_ITEM_TAG: int = 5
+    FEATURED_ITEM: int = 6
+    CHAT_MESSAGE: int = 7
+
+    REPUTATION_LOG_ITEM: int = 10
+    POLL_OPTION: int = 11
+    CHAT_THREAD: int = 12
+    COMMUNITY: int = 16
+
+    IMAGE: int = 100
+    MUSIC: int = 101
+    VIDEO: int = 102
+    YOUTUBE: int = 103
+    SHARED_FOLDER: int = 106
+    FOLDER_FILE: int = 109
+
+    VOICE: int = 110
+    MODERATION_TASK: int = 111
+    SCREENSHOT: int = 112
+    STICKER: int = 113
+    STICKER_COLLECTION: int = 114
+    PROP: int = 115
+    CHAT_BUBBLE: int = 116
+    VIDEO_FILTER: int = 117
+    ORDER: int = 118
+    SHARE_REQUEST: int = 119
+
+    VV_CHAT: int = 120
+    P2A: int = 121
+    AMINO_VIDEO: int = 123

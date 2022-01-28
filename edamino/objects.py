@@ -316,16 +316,6 @@ class TipOptionList(BaseModel):
     icon: Optional[str]
 
 
-class TipInfo(BaseModel):
-    tipOptionList: Optional[Tuple[TipOptionList, ...]]
-    tipMaxCoin: Optional[int]
-    tippersCount: Optional[int]
-    tippable: Optional[bool]
-    tipMinCoin: Optional[int]
-    tipCustomOption: Optional[TipCustomOption]
-    tippedCoins: Optional[float]
-
-
 class BlogExtensionsStyle(BaseModel):
     backgroundColor: Optional[str]
 
@@ -333,6 +323,17 @@ class BlogExtensionsStyle(BaseModel):
 class BlogExtensions(BaseModel):
     style: Optional[BlogExtensionsStyle]
     fansOnly: Optional[bool]
+
+
+class TipInfo(BaseModel):
+    tipOptionList: Optional[Tuple[TipOptionList, ...]]
+    tipMaxCoin: Optional[int]
+    tippersCount: Optional[int]
+    tippable: Optional[bool]
+    tipMinCoin: Optional[int]
+    tipCustomOption: Optional[TipCustomOption]
+    tippedCoins: Optional[int]
+
 
 
 class Blog(BaseModel):
@@ -661,6 +662,7 @@ class Template(BaseModel):
 class Mention(BaseModel):
     uid: str
 
+
 class Message(BaseModel):
     author: Optional[Author]
     mediaValue: Optional[str]
@@ -687,7 +689,6 @@ class Extensions(BaseModel):
     mentionedArray: Optional[Tuple[Mention, ...]]
 
 
-
 class Paging(BaseModel):
     nextPageToken: Optional[str]
     prevPageToken: Optional[str]
@@ -711,6 +712,31 @@ class WalletInfo(BaseModel):
     totalBusinessCoinsFloat: Optional[float]
     totalCoins: Optional[int]
     totalCoinsFloat: Optional[float]
+
+
+class Wiki(BaseModel):
+    globalVotesCount: Optional[int]
+    globalVotedValue: Optional[int]
+    votedValue: Optional[int]
+    keywords: Optional[Any]
+    mediaList: Optional[Any]
+    style: Optional[int]
+    author: Optional[Author]
+    tipInfo: Optional[TipInfo]
+    contentRating: Optional[int]
+    label: Optional[str]
+    content: Optional[str]
+    needHidden: Optional[bool]
+    guestVotesCount: Optional[int]
+    status: Optional[int]
+    globalCommentsCount: Optional[int]
+    modifiedTime: Optional[str]
+    itemId: Optional[str]
+    extensions: Optional[Any]
+    votesCount: Optional[int]
+    ndcId: Optional[int]
+    createdTime: Optional[str]
+    commentsCount: Optional[int]
 
 
 Message.update_forward_refs()
