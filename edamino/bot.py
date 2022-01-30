@@ -46,7 +46,7 @@ def get_annotations(handler: Handler, words: List[str], command: str, message: s
         if annotations:
             keys = [v for v in handler.callback.__annotations__.keys()]
             if words:
-                for word, annotation in zip(words[1:], annotations):
+                for word, annotation in zip(words, annotations):
                     args.append(annotation(word))
 
             len_anno = len(annotations)
@@ -57,7 +57,7 @@ def get_annotations(handler: Handler, words: List[str], command: str, message: s
 
         return args
     else:
-        return [message.replace(words[0], '', 1)]
+        return [message.replace(command, '', 1)]
 
 
 class Bot:
@@ -69,7 +69,7 @@ class Bot:
         self.loop = None
         self.email = email
         self.password = password
-        self.prefix = prefix
+        self.prefix = prefix.lower()
         self.timestamp = None
         self.ws = None
         self.client = None
@@ -162,7 +162,7 @@ class Bot:
         if not media_types:
             media_types = [MediaType.TEXT]
 
-        prefix = prefix if prefix is not None else self.prefix
+        prefix = prefix.lower() if prefix is not None else self.prefix
         commands = [f'{prefix}{command}' for command in commands]
 
         def register_handler(callback):
@@ -204,19 +204,20 @@ class Bot:
                         self.loop.create_task(handler.callback(context))
 
                 if msg.content is not None:
-                    words = msg.content.split()
-                    command = words[0].lower()
+                    command = msg.content.lower()
 
                     for handler in HANDLERS_COMMANDS:
-                        if command in handler.commands:
+                        is_command_list = [command.startswith(c) for c in handler.commands]
+                        if any(is_command_list):
                             context = self.get_context(self.client, msg, self.ws)
                             if '-h' in msg.content:
                                 await context.reply(handler.description)
                                 continue
                             args = [context]
-
+                            current_command = handler.commands[is_command_list.index(True)]
+                            words = msg.content.replace(current_command, '', 1).split()
                             try:
-                                args += get_annotations(handler, words, command, msg.content)
+                                args += get_annotations(handler, words, current_command, msg.content)
                             except ValueError as error:
                                 log.error(repr(error) + f"\nfunction: {handler.callback.__name__}")
                                 continue

@@ -18,7 +18,7 @@ async def on_mention(ctx: Context):
     await ctx.reply('lala')
 
 
-@bot.command('ping')
+@bot.command('ping', prefix='System call ')
 async def on_ping(ctx: Context):
     async with ctx.recording():
         await ctx.reply('Pong!')
