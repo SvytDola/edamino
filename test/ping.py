@@ -46,7 +46,7 @@ async def on_send(ctx: Context, coins: int, link: str):
 # S.c say 500 aboba play tv
 
 @bot.command('say', prefix='S.c ')
-async def _(ctx: Context, count: int, link: str, chua: str):
-    print(count, link, chua)
+async def _(ctx: Context, count: int, args: str, link: str, chua: str):
+    print(args)
 
 bot.start()

@@ -219,7 +219,10 @@ class Bot:
                                 log.info(error)
                                 continue
                             if msg.type in handler.media_types and msg.mediaType in handler.media_types:
-                                self.loop.create_task(handler.callback(*args))
+                                try:
+                                    self.loop.create_task(handler.callback(*args))
+                                except TypeError as e:
+                                    log.error(e)
                             break
 
     async def __call(self) -> None:
@@ -250,10 +253,8 @@ class Bot:
                 data = await self.ws.receive_json(loads=loads)
                 await self.__call__handlers(data)
 
-            # except (TypeError, KeyError, AttributeError, WebSocketConnectError):
-            #     continue
-            except BrokenPipeError:
-                pass
+            except (TypeError, KeyError, AttributeError, WebSocketConnectError):
+                continue
 
     def start(self, loop: Optional[AbstractEventLoop] = None, device_id: Optional[str] = None) -> None:
         global ON_READY
