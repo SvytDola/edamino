@@ -7,6 +7,7 @@ from edamino.objects import UserProfile
 
 from config import bot
 
+logger.setLevel('DEBUG')
 
 @bot.event()
 async def on_ready(profile: UserProfile):
@@ -42,9 +43,10 @@ async def on_send(ctx: Context, coins: int, link: str):
     await ctx.reply(f'{coins} {link}')
 
 
-@bot.command(['chank', 'chong'], prefix='.')
-async def on(ctx: Context, args: str):
-    await ctx.reply(args)
+# S.c say 500 aboba play tv
 
+@bot.command('say', prefix='S.c ')
+async def _(ctx: Context, count: int, link: str, chua: str):
+    print(count, link, chua)
 
 bot.start()

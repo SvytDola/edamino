@@ -41,23 +41,16 @@ class ArgumentsNotFound(Exception):
 
 def get_annotations(handler: Handler, words: List[str], command: str, message: str) -> List:
     args = []
-    if 'args' not in handler.callback.__code__.co_varnames:
-        annotations = [i for i in handler.callback.__annotations__.values()][1:]
-        if annotations:
-            keys = [v for v in handler.callback.__annotations__.keys()]
-            if words:
-                for word, annotation in zip(words, annotations):
-                    args.append(annotation(word))
-
-            len_anno = len(annotations)
-            len_args = len(args)
-            if len_anno > len_args:
-                raise ArgumentsNotFound(f'The command (`{command}`) is given without arguments '
-                                        f'({", ".join(keys[len_args - len_anno:])}), although there are arguments.')
-
-        return args
-    else:
-        return [message.replace(command, '', 1)]
+    for count, (name, annotation) in enumerate([item for item in handler.callback.__annotations__.items()][1:]):
+        if name == 'args':
+            string = message.replace(command + ' ', '', 1)
+            args.append(string)
+        else:
+            with suppress(IndexError):
+                word = words[count]
+                args.append(annotation(word))
+                message = message.replace(word + ' ', '', 1)
+    return args
 
 
 class Bot:
@@ -215,7 +208,7 @@ class Bot:
                                 continue
                             args = [context]
                             current_command = handler.commands[is_command_list.index(True)]
-                            content = msg.content[len(current_command):]
+                            content = msg.content[len(current_command) + 1:]
                             words = content.split()
                             try:
                                 args += get_annotations(handler, words, current_command, content)
@@ -257,8 +250,10 @@ class Bot:
                 data = await self.ws.receive_json(loads=loads)
                 await self.__call__handlers(data)
 
-            except (TypeError, KeyError, AttributeError, WebSocketConnectError):
-                continue
+            # except (TypeError, KeyError, AttributeError, WebSocketConnectError):
+            #     continue
+            except BrokenPipeError:
+                pass
 
     def start(self, loop: Optional[AbstractEventLoop] = None, device_id: Optional[str] = None) -> None:
         global ON_READY
