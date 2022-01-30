@@ -43,13 +43,13 @@ def get_annotations(handler: Handler, words: List[str], command: str, message: s
     args = []
     for count, (name, annotation) in enumerate([item for item in handler.callback.__annotations__.items()][1:]):
         if name == 'args':
-            string = message.replace(command + ' ', '', 1)
+            string = message.replace(command, '', 1)
             args.append(string)
         else:
             with suppress(IndexError):
                 word = words[count]
                 args.append(annotation(word))
-                message = message.replace(word + ' ', '', 1)
+                message = message.replace(word, '', 1)
     return args
 
 
@@ -208,7 +208,7 @@ class Bot:
                                 continue
                             args = [context]
                             current_command = handler.commands[is_command_list.index(True)]
-                            content = msg.content[len(current_command) + 1:]
+                            content = msg.content[len(current_command):]
                             words = content.split()
                             try:
                                 args += get_annotations(handler, words, current_command, content)
