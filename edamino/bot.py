@@ -215,9 +215,10 @@ class Bot:
                                 continue
                             args = [context]
                             current_command = handler.commands[is_command_list.index(True)]
-                            words = msg.content.replace(current_command, '', 1).split()
+                            content = msg.content[len(current_command):]
+                            words = content.split()
                             try:
-                                args += get_annotations(handler, words, current_command, msg.content)
+                                args += get_annotations(handler, words, current_command, content)
                             except ValueError as error:
                                 log.error(repr(error) + f"\nfunction: {handler.callback.__name__}")
                                 continue

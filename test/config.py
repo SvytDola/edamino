@@ -7,4 +7,4 @@ load_dotenv('.env')
 EMAIL = getenv('email')
 PASSWORD = getenv('password')
 
-bot = Bot(email=EMAIL, password=PASSWORD, prefix="")
+bot = Bot(email=EMAIL, password=PASSWORD, prefix="System call ")
