@@ -864,3 +864,6 @@ class Client:
         }
         response = await self.request('POST', f"user-profile/{user_id}/unban", data)
         return response
+
+    async def claim_reputation(self, chat_id: str):
+        return await self.request('POST', f'chat/thread/{chat_id}/avchat-reputation')
