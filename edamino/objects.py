@@ -695,7 +695,7 @@ class Paging(BaseModel):
 
 
 class Messages(BaseModel):
-    messageList: Optional[Tuple[Chat, ...]]
+    messageList: Optional[Tuple[Message, ...]]
     paging: Optional[Paging]
     apiMessage: Optional[str] = Field(alias='api:message')
     apiStatuscode: Optional[int] = Field(alias='api:statuscode')

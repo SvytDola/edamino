@@ -1,3 +1,5 @@
+from pathlib import Path
+from re import search
 from time import time
 from os import environ
 
@@ -14,6 +16,8 @@ from collections import namedtuple
 from typing import Optional, List, Union, Tuple, Dict, Callable
 from functools import partial
 from contextlib import suppress
+
+__all__ = ['Bot']
 
 load_dotenv('.env')
 
@@ -256,13 +260,29 @@ class Bot:
             except (TypeError, KeyError, AttributeError, WebSocketConnectError):
                 continue
 
-    def start(self, loop: Optional[AbstractEventLoop] = None, device_id: Optional[str] = None) -> None:
+    def start(self,
+              loop: Optional[AbstractEventLoop] = None,
+              device_id: Optional[str] = None,
+              check_updates: bool = True) -> None:
+
         global ON_READY
         self.check_cfg()
         self.loop = loop if loop is not None else get_event_loop()
 
         self.client = Client(device_id=device_id)
+
         try:
+            if check_updates:
+                response = self.loop.run_until_complete(
+                    self.client.request('GET', 'https://pypi.org/pypi/ed-amino/json', full_url=True))
+
+                version = response['info']['version']
+
+                with open(f'{Path(__file__).parent}/__init__.py') as f:
+                    __version__ = search(r'.[0-9].[0-9].[0-9].[0-9]', f.read()).group()[1:]
+                if __version__ != version:
+                    log.info(f'Please update to the latest version: {version}. Current version: {__version__}')
+
             profile: UserProfile
             if self.sid is None:
                 login = self.loop.run_until_complete(self.client.login(self.email, self.password))

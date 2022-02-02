@@ -9,6 +9,7 @@ from config import bot
 
 logger.setLevel('DEBUG')
 
+
 @bot.event()
 async def on_ready(profile: UserProfile):
     logger.info(f'{profile.nickname} ready.')
@@ -48,5 +49,6 @@ async def on_send(ctx: Context, coins: int, link: str):
 @bot.command('say')
 async def _(ctx: Context, args: str):
     await ctx.reply(args)
+
 
 bot.start()

@@ -1,11 +1,12 @@
 from setuptools import setup, find_packages
+from edamino import __version__
 
 with open('README.md', 'r') as stream:
     long_description = stream.read()
 
 setup(
     name='ed-amino',
-    version='0.7.2.9',
+    version=__version__,
     url='https://github.com/SvytDola/edamino',
     license='MIT',
     author='SvytDola',

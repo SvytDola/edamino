@@ -39,6 +39,10 @@ class SpecifyType(Exception):
     pass
 
 
+class HtmlError(Exception):
+    pass
+
+
 class Embed:
     __slots__ = (
         'object_id',

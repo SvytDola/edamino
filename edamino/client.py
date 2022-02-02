@@ -4,7 +4,7 @@ from ujson import dumps, loads
 from aiohttp import (
     ClientSession,
     ClientWebSocketResponse,
-    WSServerHandshakeError
+    WSServerHandshakeError, ContentTypeError
 )
 from typing import (
     Optional,
@@ -22,6 +22,8 @@ from hmac import new
 from binascii import hexlify
 from os import urandom
 from uuid import UUID
+
+__all__ = ['Client']
 
 
 def get_timestamp() -> int:
@@ -71,13 +73,6 @@ class Client:
 
         self.set_ndc(com_id)
         self.headers = {
-            "Accept-Language": "en-US",
-            "Content-Type": api.ContentType.APPLICATION_JSON,
-            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; Redmi Note 4 Build/RQ3A"
-                          ".211001.001; com.narvii.amino.master/3.4.33598)",
-            "Host": "service.narvii.com",
-            "Accept-Encoding": "gzip",
-            "Connection": "Keep-Alive",
             "NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID
         }
         self.session = session if session is not None else ClientSession(json_serialize=dumps)
@@ -137,9 +132,15 @@ class Client:
             headers['Content-Type'] = content_type
 
         async with self.session.request(method=method, url=url, headers=headers, data=data) as resp:
-            response: Dict = await resp.json(loads=loads)
+            try:
+                response: Dict = await resp.json(loads=loads)
+            except ContentTypeError as error:
+                text = await resp.text()
+                raise api.HtmlError(text)
+
         if resp.status != 200:
             raise api.InvalidRequest(response['api:message'], response['api:statuscode'], response)
+
         return response
 
     async def login(self, email: str, password: str) -> objects.Login:
@@ -867,3 +868,6 @@ class Client:
 
     async def claim_reputation(self, chat_id: str):
         return await self.request('POST', f'chat/thread/{chat_id}/avchat-reputation')
+
+    async def get_vc_reputation_info(self, chat_id: str):
+        return await self.request('GET', f'chat/thread/{chat_id}/avchat-reputation')
