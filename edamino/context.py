@@ -142,3 +142,6 @@ class Context:
         finally:
             data['t'] = 306
             await self.ws.send_str(dumps(data))
+
+    async def get_chat_messages(self, size: int = 25, page_token: Optional[str] = None):
+        return await self.client.get_chat_messages(self.msg.threadId, size, page_token)
