@@ -1,5 +1,8 @@
 from setuptools import setup, find_packages
-from edamino import __version__
+from re import search
+
+with open(f'edamino/__init__.py') as f:
+    __version__ = search(r'.[0-9].[0-9].[0-9].[0-9]', f.read()).group()[1:]
 
 with open('README.md', 'r') as stream:
     long_description = stream.read()
