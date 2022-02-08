@@ -13,7 +13,7 @@ from .api import MessageType, MediaType, WebSocketConnectError
 from dotenv import load_dotenv
 from asyncio import get_event_loop, AbstractEventLoop, iscoroutinefunction
 from collections import namedtuple
-from typing import Optional, List, Union, Tuple, Dict, Callable
+from typing import Optional, List, Union, Tuple, Dict, Callable, Awaitable
 from functools import partial
 from contextlib import suppress
 
@@ -22,13 +22,13 @@ __all__ = ['Bot']
 load_dotenv('.env')
 
 Handler = namedtuple('Handler', ['commands', 'media_types', 'message_types', 'callback', 'description'])
+
 HANDLERS_COMMANDS: List[Handler] = []
 HANDLERS_EVENTS: List[Handler] = []
+CALLBACKS: List[Callable[[Client], Awaitable[None]]] = []
 
-ON_READY: Optional[Callable] = None
-ON_MENTION: Optional[Callable] = None
-
-ON_REPLY: Optional[Callable] = None
+ON_READY: Optional[Callable[[UserProfile], Awaitable[None]]] = None
+ON_MENTION: Optional[Callable[[Context], Awaitable[None]]] = None
 
 
 class TheCommandAlreadyExists(Exception):
@@ -121,7 +121,7 @@ class Bot:
             media_types = [MediaType.TEXT]
 
         def register_handler(callback):
-            global ON_READY, ON_MENTION, ON_REPLY
+            global ON_READY, ON_MENTION
 
             name_callback = callback.__name__
 
@@ -236,6 +236,13 @@ class Bot:
         if ON_READY:
             await ON_READY()
 
+        if CALLBACKS:
+            async def run_while_task(cal) -> None:
+                while True:
+                    await cal(self.client)
+            for callback in CALLBACKS:
+                self.loop.create_task(run_while_task(callback))
+
         while True:
             try:
                 if int(time()) - timestamp >= 180:
@@ -305,3 +312,12 @@ class Bot:
             log.info("Goodbye. ^^")
         finally:
             self.loop.run_until_complete(self.client.session.close())
+
+    @staticmethod
+    def background_task(callback: Callable[[Client], Awaitable[None]]):
+        if iscoroutinefunction(callback) is False:
+            raise IsNotCoroutineFunction(callback.__name__)
+
+        CALLBACKS.append(callback)
+
+        return callback

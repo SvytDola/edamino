@@ -1,8 +1,9 @@
 import time
 
 import random
+from asyncio import sleep
 
-from edamino import Context, logger
+from edamino import Context, logger, Client
 from edamino.objects import UserProfile
 
 from config import bot
@@ -44,11 +45,18 @@ async def on_send(ctx: Context, coins: int, link: str):
     await ctx.reply(f'{coins} {link}')
 
 
-# S.c say 500 aboba play tv
-
 @bot.command('say')
 async def _(ctx: Context, args: str):
     await ctx.reply(args)
+
+
+@bot.background_task
+async def say(client: Client):
+    communities = await client.get_my_communities(size=10)
+    client.set_ndc(communities[0].ndcId)
+    await client.check_in()
+
+    print('Ok')
 
 
 bot.start()
