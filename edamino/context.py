@@ -145,3 +145,14 @@ class Context:
 
     async def get_chat_messages(self, size: int = 25, page_token: Optional[str] = None):
         return await self.client.get_chat_messages(self.msg.threadId, size, page_token)
+
+    async def start_chat(self,
+                         content: Optional[str] = None,
+                         chat_type: int = 0,
+                         is_global: bool = False,
+                         publish_to_global: bool = False):
+        return await self.client.start_chat(invitee_ids=[self.msg.author.uid],
+                                            content=content,
+                                            chat_type=chat_type,
+                                            is_global=is_global,
+                                            publish_to_global=publish_to_global)

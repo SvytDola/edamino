@@ -3,7 +3,7 @@ import time
 import random
 from asyncio import sleep
 
-from edamino import Context, logger, Client
+from edamino import Context, logger, Client, api
 from edamino.objects import UserProfile
 
 from config import bot
@@ -52,11 +52,20 @@ async def _(ctx: Context, args: str):
 
 @bot.background_task
 async def say(client: Client):
-    communities = await client.get_my_communities(size=10)
-    client.set_ndc(communities[0].ndcId)
-    await client.check_in()
+    try:
+        communities = await client.get_my_communities(size=10)
+        client.set_ndc(communities[0].ndcId)
+        await client.check_in()
+        logger.info('Check in.')
+    except api.InvalidRequest as e:
+        logger.info(e.message)
+    finally:
+        await sleep(24 * 60 * 60)
 
-    print('Ok')
+
+@bot.command('chat')
+async def on_chat(ctx: Context):
+    await ctx.client.start_chat(invitee_ids=[ctx.msg.author.uid], content='Hello.')
 
 
 bot.start()

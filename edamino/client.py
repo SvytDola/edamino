@@ -417,9 +417,6 @@ class Client:
 
         return await self.request('POST', f'user-profile/{self.uid}', data)
 
-    async def create_chat(self):
-        pass
-
     async def comment_blog(self,
                            blog_id: str,
                            message: Optional[str] = None,
@@ -871,3 +868,23 @@ class Client:
 
     async def get_vc_reputation_info(self, chat_id: str):
         return await self.request('GET', f'chat/thread/{chat_id}/avchat-reputation')
+
+    async def start_chat(self,
+                         invitee_ids: List[str],
+                         chat_type: int = 0,
+                         content: Optional[str] = None,
+                         title: Optional[str] = None,
+                         is_global: bool = False,
+                         publish_to_global: bool = False) -> objects.Chat:
+        data = {
+            "title": title,
+            "type": chat_type,
+            "inviteeUids": invitee_ids,
+            "initialMessageContent": content,
+            "publishToGlobal": 0 if publish_to_global is False else 1
+        }
+        if is_global is True:
+            data["eventSource"] = "GlobalComposeMenu"
+
+        response = await self.request("POST", url='chat/thread', json=data)
+        return objects.Chat(**response["thread"])

@@ -402,3 +402,9 @@ class ObjectTypes:
     VV_CHAT: int = 120
     P2A: int = 121
     AMINO_VIDEO: int = 123
+
+
+class ChatType:
+    PUBLIC_CHAT: int = 2
+    PRIVATE_CHAT: int = 1
+    PM_CHAT: int = 0
