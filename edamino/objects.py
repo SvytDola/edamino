@@ -588,6 +588,12 @@ class ChatExtensions(BaseModel):
     lastMembersSummaryUpdateTime: Optional[int]
     fansOnly: Optional[bool]
     channelType: Optional[int]
+    creatorUid: Optional[str] = Field(alias="uid")
+    visibility: Optional[int]
+    bannedMemberUidList: Optional[list[str]]
+    announcement: Optional[str]
+    pinAnnouncement: Optional[bool]
+    vvChatJoinType: Optional[int]
 
 
 class LastMessageSummary(BaseModel):
