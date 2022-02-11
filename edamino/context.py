@@ -1,18 +1,20 @@
 from .client import Client
 from .objects import Message
-from .api import Embed, LinkSnippet
+from .api import Embed, LinkSnippet, WebSocketConnectError
 from typing import (
     List,
-    Optional, Literal
+    Optional,
+    Literal
 )
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from ujson import dumps
+from aiohttp import ClientWebSocketResponse
 
 
 class Context:
     __slots__ = ('msg', 'client', 'ws')
 
-    def __init__(self, msg: Message, client: Client, ws) -> None:
+    def __init__(self, msg: Message, client: Client, ws: ClientWebSocketResponse) -> None:
         self.msg = msg
         self.client = client
         self.ws = ws
@@ -51,14 +53,16 @@ class Context:
                    ref_id: Optional[int] = None,
                    mentions: Optional[List[str]] = None,
                    embed: Optional[Embed] = None,
-                   link_snippets_list: Optional[List[LinkSnippet]] = None):
+                   link_snippets_list: Optional[List[LinkSnippet]] = None,
+                   reply: Optional[str] = None):
         return await self.client.send_message(message=message,
                                               chat_id=self.msg.threadId,
                                               message_type=message_type,
                                               ref_id=ref_id,
                                               mentions=mentions,
                                               embed=embed,
-                                              link_snippets_list=link_snippets_list)
+                                              link_snippets_list=link_snippets_list,
+                                              reply=reply)
 
     async def get_user_info(self):
         return await self.client.get_user_info(self.msg.author.uid)
@@ -156,3 +160,15 @@ class Context:
                                             chat_type=chat_type,
                                             is_global=is_global,
                                             publish_to_global=publish_to_global)
+
+    async def input(self, chat_id: Optional[str] = None):
+        if chat_id is None:
+            chat_id = self.msg.threadId
+
+        while True:
+            with suppress(WebSocketConnectError):
+                async for data in self.client.receive_ws_message():
+                    if data['t'] == 1000:
+                        msg = Message(**data['o']['chatMessage'], ndcId=data['o']['ndcId'])
+                        if msg.threadId == chat_id:
+                            yield msg

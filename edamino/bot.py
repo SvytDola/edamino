@@ -60,6 +60,8 @@ def get_annotations(handler: Handler, words: List[str], command: str, message: s
 class Bot:
     __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp', 'ws', 'client')
 
+    loop: Optional[AbstractEventLoop]
+
     def __init__(self, email: str, password: str, prefix: str = ""):
         self.uid = None
         self.sid = None

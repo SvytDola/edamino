@@ -1,3 +1,4 @@
+from contextlib import suppress
 from copy import copy
 from edamino import objects, api
 from ujson import dumps, loads
@@ -34,11 +35,12 @@ class Client:
     __slots__ = (
         'ndc_id',
         'session',
-        'headers'
+        'headers',
+        'proxy'
     )
 
     ndc_id: str
-
+    proxy: Optional[str]
     session: ClientSession
     headers: Dict[str, str]
 
@@ -67,10 +69,11 @@ class Client:
         self.headers["NDCDEVICEID"] = device_id
 
     def __init__(self,
-                 com_id: int = 0,
                  device_id: Optional[str] = None,
+                 com_id: int = 0,
+                 proxy: Optional[str] = None,
                  session: Optional[ClientSession] = None) -> None:
-
+        self.proxy = proxy
         self.set_ndc(com_id)
         self.headers = {
             "NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID
@@ -131,10 +134,10 @@ class Client:
             headers = copy(self.headers)
             headers['Content-Type'] = content_type
 
-        async with self.session.request(method=method, url=url, headers=headers, data=data) as resp:
+        async with self.session.request(method=method, url=url, headers=headers, data=data, proxy=self.proxy) as resp:
             try:
                 response: Dict = await resp.json(loads=loads)
-            except ContentTypeError as error:
+            except ContentTypeError:
                 text = await resp.text()
                 raise api.HtmlError(text)
 
@@ -192,7 +195,7 @@ class Client:
 
         if response.status != 200:
             js_resp: Dict = loads(await response.text())
-            raise api.InvalidRequest(js_resp['api:message'], js_resp['api:statuscode'])
+            raise api.InvalidRequest(js_resp['api:message'], js_resp['api:statuscode'], js_resp)
 
         return f
 
@@ -288,6 +291,21 @@ class Client:
                 continue
 
         raise api.WebSocketConnectError("Failed to connect to remote server.")
+
+    async def receive_ws_message(self, is_closed: bool = False):
+        timestamp = time()
+        ws = await self.ws_connect()
+
+        while True:
+            with suppress(TypeError):
+                if is_closed is True:
+                    break
+
+                if time() - timestamp >= 180:
+                    await ws.close()
+                    raise api.WebSocketConnectError('Connection closed.')
+
+                yield await ws.receive_json(loads=loads)
 
     async def get_from_id(self, object_id: str, object_type: int = 0) -> objects.LinkInfo:
         data = {
@@ -523,7 +541,6 @@ class Client:
                          object_id: Optional[str] = None,
                          transaction_id: Optional[str] = None
                          ) -> Dict:
-
         url: str = ""
         if transaction_id is None:
             transaction_id = str(UUID(hexlify(urandom(16)).decode('ascii')))
@@ -551,7 +568,6 @@ class Client:
                         auto_renew: bool = False,
                         transaction_id: Optional[str] = None,
                         ) -> Dict:
-
         if transaction_id is None:
             transaction_id = str(UUID(hexlify(urandom(16)).decode('ascii')))
         data = {
@@ -620,7 +636,6 @@ class Client:
                         publish_to_global: bool = False,
                         fans_only: bool = None
                         ) -> Dict:
-
         data: Dict[str, Any] = {}
 
         if title:
@@ -723,7 +738,6 @@ class Client:
                         backgroundColor: Optional[str] = None,
                         fansOnly: bool = False,
                         extensions: Optional[Dict] = None) -> objects.Blog:
-
         media_list: Optional[List] = None
 
         if caption_list and image_list:
@@ -761,7 +775,6 @@ class Client:
                         keywords: Optional[str] = None,
                         backgroundColor: Optional[str] = None,
                         fansOnly: bool = False) -> objects.Wiki:
-
         media_list = [[100, image, None] for image in image_list] if image_list is not None else None
 
         data: Dict[str, Any] = {
@@ -784,7 +797,7 @@ class Client:
         return objects.Wiki(**response)
 
     async def edit_blog(self,
-                        blogId: str,
+                        blog_id: str,
                         title: Optional[str] = None,
                         content: Optional[str] = None,
                         image_list: Optional[list] = None,
@@ -812,7 +825,7 @@ class Client:
         if categories_list:
             data["taggedBlogCategoryIdList"] = categories_list
 
-        response = await self.request('POST', "blog/{blogId}", data)
+        response = await self.request('POST', f"blog/{blog_id}", data)
         return response
 
     async def repost_blog(self,

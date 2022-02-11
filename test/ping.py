@@ -4,7 +4,7 @@ import random
 from asyncio import sleep
 
 from edamino import Context, logger, Client, api
-from edamino.objects import UserProfile
+from edamino.objects import UserProfile, Message
 
 from config import bot
 
@@ -50,6 +50,13 @@ async def _(ctx: Context, args: str):
     await ctx.reply(args)
 
 
+@bot.command('input')
+async def input(ctx: Context):
+    async for m in ctx.input():
+        if 'Dola' in ctx.msg.author.nickname:
+            await ctx.reply(m.content)
+
+
 @bot.background_task
 async def say(client: Client):
     try:
@@ -61,11 +68,6 @@ async def say(client: Client):
         logger.info(e.message)
     finally:
         await sleep(24 * 60 * 60)
-
-
-@bot.command('chat')
-async def on_chat(ctx: Context):
-    await ctx.client.start_chat(invitee_ids=[ctx.msg.author.uid], content='Hello.')
 
 
 bot.start()
