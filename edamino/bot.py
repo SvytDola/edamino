@@ -341,7 +341,7 @@ class Bot:
             try:
                 future = self.loop.create_future()
                 self.futures.append(future)
-                msg = await wait_for(future, timeout=timeout, loop=self.loop)
+                msg = await wait_for(future, timeout=timeout)
                 if check(msg):
                     return msg
             except TimeoutError:
