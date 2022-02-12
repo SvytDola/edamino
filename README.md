@@ -26,6 +26,11 @@ async def echo(ctx: Context):
 if __name__ == '__main__':
     bot.start()
 ```
+
+**[Examples](https://github.com/SvytDola/edamino/blob/master/docs/docs.md)**
+
+
 ![](https://media.discordapp.net/attachments/868188677602422804/931159730393591870/anim.gif)
+
 
 If you have any problems, please write to this discord https://discord.gg/SfzWs5djpT
