@@ -108,6 +108,7 @@ bot.start()
 
 ```py
 from edamino import Bot, Context
+from edamino.objects import Message
 
 bot = Bot('email', 'password', 'prefix')
 
