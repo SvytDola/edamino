@@ -5,15 +5,19 @@
     * [Send sticker](#send-sticker)
     * [Send embed](#send-embed)
     * [Wait for](#wait-for)
+
 * [Events](#event)
     * [on_ready](#on-ready-event)
     * [on_mention](#on-ready-event)
+    * [Selecting a message type or media type](#select-type)
+
 * [Decorator command capabilities](#command)
     * [Additional parameters](#command-parameters)
 
-
 <br><br>
+
 # Examples <a id=example>
+
 ## Minimal example <a id=min-example>
 
 ```py
@@ -103,7 +107,9 @@ async def on_embed(ctx: Context):
 
 bot.start()
 ```
+
 ## Wait for <a id=wait-for>
+
 **NOTE: The `bot.wait_for` necessary if you want to receive the following message..**
 
 ```py
@@ -120,6 +126,7 @@ async def on_check(ctx: Context):
 
     msg = await bot.wait_for(check=check)
     await ctx.send('Ok', reply=msg.messageId)
+
 
 bot.start()
 ```
@@ -159,6 +166,66 @@ bot = Bot(email='email', password='password', prefix="/")
 @bot.event()
 async def on_mention(ctx: Context):
     await ctx.reply('lala')
+
+
+bot.start()
+```
+
+## Selecting a message type or media type <a id=select-type>
+
+**NOTE: You can set up which types of messages the event will react to.**
+
+```py
+from edamino import Bot, Context, logger
+from edamino import api
+
+bot = Bot(email='email', password='password', prefix="/")
+
+
+# This event will accept absolutely all types of messages
+@bot.event(message_types=api.MessageType.ALL, media_types=api.MediaType.ALL)
+async def on_message(ctx: Context):
+    logger.info(str(ctx.msg.content))
+
+
+# This event will be triggered if someone has entered the chat room.
+@bot.event([api.MessageType.GROUP_MEMBER_JOIN])
+async def on_member_join(ctx: Context):
+    embed = api.Embed(
+        title=ctx.msg.author.nickname,
+        object_type=0,
+        object_id=ctx.msg.author.uid,
+    )
+    await ctx.send("Welcome to the chat!", embed=embed)
+
+
+bot.start()
+```
+
+# Decorator command capabilities <a id=command>
+
+## Command parameters <a id=command-parameters>
+
+```py
+from edamino import Bot, Context
+
+bot = Bot(email='email', password='password', prefix="/")
+
+
+@bot.command('say')
+async def on_say(ctx: Context, args: str)
+    await ctx.reply(args)
+
+
+@bot.command('get')
+async def on_send(ctx: Context, link: str):
+    """
+    User: get https://aminoapps/c/anime
+    Bot: Community id
+    """
+    info = await ctx.get_info_link(link)
+
+    await ctx.reply(str(info.community.ndcId))
 
 
 bot.start()
