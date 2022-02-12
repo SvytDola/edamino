@@ -1,12 +1,12 @@
 from .client import Client
 from .objects import Message
-from .api import Embed, LinkSnippet, WebSocketConnectError
+from .api import Embed, LinkSnippet
 from typing import (
     List,
     Optional,
-    Literal
+    Literal, Callable
 )
-from contextlib import asynccontextmanager, suppress
+from contextlib import asynccontextmanager, contextmanager
 from ujson import dumps
 from aiohttp import ClientWebSocketResponse
 
@@ -20,7 +20,7 @@ class Context:
         self.ws = ws
 
     async def reply(self,
-                    message: str,
+                    message: Optional[str] = None,
                     message_type: int = 0,
                     ref_id: Optional[int] = None,
                     mentions: Optional[List[str]] = None,
@@ -48,7 +48,7 @@ class Context:
         return await self.client.download_from_link(link)
 
     async def send(self,
-                   message: str,
+                   message: Optional[str] = None,
                    message_type: int = 0,
                    ref_id: Optional[int] = None,
                    mentions: Optional[List[str]] = None,
@@ -161,14 +161,19 @@ class Context:
                                             is_global=is_global,
                                             publish_to_global=publish_to_global)
 
-    async def input(self, chat_id: Optional[str] = None):
-        if chat_id is None:
-            chat_id = self.msg.threadId
+    async def send_sticker(self, sticker_id: str):
+        return await self.client.send_sticker(self.msg.threadId, sticker_id)
 
-        while True:
-            with suppress(WebSocketConnectError):
-                async for data in self.client.receive_ws_message():
-                    if data['t'] == 1000:
-                        msg = Message(**data['o']['chatMessage'], ndcId=data['o']['ndcId'])
-                        if msg.threadId == chat_id:
-                            yield msg
+    async def get_chat_info(self):
+        return await self.client.get_chat_info(self.msg.threadId)
+
+    @contextmanager
+    def set_ndc(self, ndc_id: int = 0):
+        try:
+            self.client.set_ndc(ndc_id)
+            yield
+        finally:
+            self.client.set_ndc(self.msg.ndcId)
+
+    async def get_message_info(self):
+        return await self.client.get_message_info(self.msg.threadId, self.msg.messageId)

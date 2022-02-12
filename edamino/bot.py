@@ -1,3 +1,4 @@
+from asyncio import TimeoutError
 from pathlib import Path
 from re import search
 from time import time
@@ -11,7 +12,7 @@ from .objects import Message, UserProfile
 from .api import MessageType, MediaType, WebSocketConnectError
 
 from dotenv import load_dotenv
-from asyncio import get_event_loop, AbstractEventLoop, iscoroutinefunction
+from asyncio import get_event_loop, AbstractEventLoop, iscoroutinefunction, Future, wait_for
 from collections import namedtuple
 from typing import Optional, List, Union, Tuple, Dict, Callable, Awaitable
 from functools import partial
@@ -58,7 +59,9 @@ def get_annotations(handler: Handler, words: List[str], command: str, message: s
 
 
 class Bot:
-    __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp', 'ws', 'client')
+    # Most of the features are taken from the amsync library :D
+
+    __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp', 'ws', 'client', 'futures')
 
     loop: Optional[AbstractEventLoop]
 
@@ -71,6 +74,7 @@ class Bot:
         self.prefix = prefix.lower()
         self.timestamp = None
         self.ws = None
+        self.futures: List[Future] = []
         self.client = None
 
     def get_context(self, client: Client, msg: Message, ws):
@@ -188,6 +192,12 @@ class Bot:
     async def __call__handlers(self, data: Dict):
         if data['t'] == 1000:
             msg = Message(**data['o']['chatMessage'], ndcId=data['o']['ndcId'])
+
+            if self.futures:
+                for future in self.futures:
+                    future.set_result(msg)
+                self.futures.clear()
+
             if msg.author.uid != self.uid:
                 if ON_MENTION is not None:
                     uids = ()
@@ -242,6 +252,7 @@ class Bot:
             async def run_while_task(cal) -> None:
                 while True:
                     await cal(self.client)
+
             for callback in CALLBACKS:
                 self.loop.create_task(run_while_task(callback))
 
@@ -323,3 +334,16 @@ class Bot:
         CALLBACKS.append(callback)
 
         return callback
+
+    async def wait_for(self, check: Callable[[Message], bool], timeout: Optional[float] = None) -> Message:
+        while True:
+            index = len(self.futures)
+            try:
+                future = self.loop.create_future()
+                self.futures.append(future)
+                msg = await wait_for(future, timeout=timeout, loop=self.loop)
+                if check(msg):
+                    return msg
+            except TimeoutError:
+                del self.futures[index]
+                raise TimeoutError("Message not found.")

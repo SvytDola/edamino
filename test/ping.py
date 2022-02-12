@@ -50,11 +50,18 @@ async def _(ctx: Context, args: str):
     await ctx.reply(args)
 
 
-@bot.command('input')
-async def input(ctx: Context):
-    async for m in ctx.input():
-        if 'Dola' in ctx.msg.author.nickname:
-            await ctx.reply(m.content)
+@bot.command('count')
+async def on_count(ctx: Context):
+    response = await ctx.client.request("GET",
+                                        f"live-layer?topic=ndtopic%3A{ctx.client.ndc_id}%3Aonline-members&start=0&size=1")
+    await ctx.reply(str(response["userProfileCount"]))
+
+
+@bot.command('check')
+async def on_check(ctx: Context):
+    msg = await bot.wait_for(check=lambda m: m.content == 'count' and m.uid == ctx.msg.uid, timeout=60)
+
+    await ctx.send(m.content, reply=msg.messageId)
 
 
 @bot.background_task

@@ -3,6 +3,7 @@ from typing import Optional, Dict, Tuple, Union, TypeVar
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 from ujson import dumps
+from aiofile import async_open
 
 DEVICE_ID = "3298A71AFE0EA0B7EDDAFA2337B38488E23D8060A98946A75EAE99EBE7FA2F0B4D4212428CB8B2253D"
 
@@ -193,6 +194,13 @@ class File:
     def load(path: str) -> bytes:
         with open(path, 'rb') as file:
             data = file.read()
+        return data
+
+    @staticmethod
+    async def async_load(path: str) -> bytes:
+        async with async_open(path, 'rb') as file:
+            data = await file.read()
+
         return data
 
 

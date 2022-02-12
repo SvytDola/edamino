@@ -23,7 +23,8 @@ setup(
         'aiohttp',
         'ujson',
         'python-dotenv',
-        'pydantic'
+        'pydantic',
+        'aiofile'
     ],
     classifiers=[
         'License :: OSI Approved :: MIT License',

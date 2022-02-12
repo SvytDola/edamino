@@ -230,7 +230,7 @@ class Client:
 
     async def send_message(self,
                            chat_id: str,
-                           message: str,
+                           message: Optional[str] = None,
                            message_type: int = 0,
                            ref_id: Optional[int] = None,
                            reply: Optional[str] = None,
@@ -292,18 +292,15 @@ class Client:
 
         raise api.WebSocketConnectError("Failed to connect to remote server.")
 
-    async def receive_ws_message(self, is_closed: bool = False):
-        timestamp = time()
+    async def receive_ws_message(self):
+        timestamp = int(time())
         ws = await self.ws_connect()
 
         while True:
             with suppress(TypeError):
-                if is_closed is True:
-                    break
-
                 if time() - timestamp >= 180:
-                    await ws.close()
-                    raise api.WebSocketConnectError('Connection closed.')
+                    ws = await self.ws_connect()
+                    timestamp = int(time())
 
                 yield await ws.receive_json(loads=loads)
 
@@ -901,3 +898,13 @@ class Client:
 
         response = await self.request("POST", url='chat/thread', json=data)
         return objects.Chat(**response["thread"])
+
+    async def send_sticker(self, chat_id: str, sticker_id: str) -> objects.Message:
+        data = {
+            'content': None,
+            'stickerId': sticker_id,
+            'type': api.MessageType.STICKER
+        }
+
+        response = await self.request('POST', f'chat/thread/{chat_id}/message', data)
+        return objects.Message(**response['message'])
