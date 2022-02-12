@@ -8,6 +8,8 @@
     * [on_ready](#on-ready-event)
     * [on_mention](#on-ready-event)
 
+<br><br>
+# Examples <a id=example>
 ## Minimal example <a id=min-example>
 
 ```py
@@ -98,7 +100,7 @@ async def on_embed(ctx: Context):
 bot.start()
 ```
 
-# Events <a id=#event>
+# Events <a id=event>
 
 ## `on_ready` <a id=on-ready-event>
 
@@ -120,7 +122,7 @@ async def on_ready(profile: UserProfile):
 bot.start()
 ```
 
-##`on_mention` <a id=on-mention-event>
+## `on_mention` <a id=on-mention-event>
 
 **NOTE: The `on_mention` event is designed to find out when the bot will start its work. It takes the bot global profile
 as the parameter.**
