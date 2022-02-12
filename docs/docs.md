@@ -104,7 +104,7 @@ async def on_embed(ctx: Context):
 bot.start()
 ```
 ## Wait for <a id=wait-for>
-**NOTE: The `bot.wait_fro` necessary if you want to receive the following message..**
+**NOTE: The `bot.wait_for` necessary if you want to receive the following message..**
 
 ```py
 from edamino import Bot, Context
