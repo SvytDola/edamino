@@ -4,9 +4,13 @@
     * [Send gif](#send-gif)
     * [Send sticker](#send-sticker)
     * [Send embed](#send-embed)
+    * [Wait for](#wait-for)
 * [Events](#event)
     * [on_ready](#on-ready-event)
     * [on_mention](#on-ready-event)
+* [Decorator command capabilities](#command)
+    * [Additional parameters](#command-parameters)
+
 
 <br><br>
 # Examples <a id=example>
@@ -99,6 +103,25 @@ async def on_embed(ctx: Context):
 
 bot.start()
 ```
+## Wait for <a id=wait-for>
+**NOTE: The `bot.wait_fro` necessary if you want to receive the following message..**
+
+```py
+from edamino import Bot, Context
+
+bot = Bot('email', 'password', 'prefix')
+
+
+@bot.command('check')
+async def on_check(ctx: Context):
+    def check(m: Message):
+        return m.content == 'Sh'
+
+    msg = await bot.wait_for(check=check)
+    await ctx.send('Ok', reply=msg.messageId)
+
+bot.start()
+```
 
 # Events <a id=event>
 
@@ -124,8 +147,7 @@ bot.start()
 
 ## `on_mention` <a id=on-mention-event>
 
-**NOTE: The `on_mention` event is designed to find out when the bot will start its work. It takes the bot global profile
-as the parameter.**
+**NOTE: The `on_mention` event is triggered if the bot is mentioned or responded to.**
 
 ```py
 from edamino import Bot, Context
