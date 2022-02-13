@@ -590,7 +590,7 @@ class ChatExtensions(BaseModel):
     channelType: Optional[int]
     creatorUid: Optional[str] = Field(alias="uid")
     visibility: Optional[int]
-    bannedMemberUidList: Optional[list[str]]
+    bannedMemberUidList: Optional[List[str]]
     announcement: Optional[str]
     pinAnnouncement: Optional[bool]
     vvChatJoinType: Optional[int]
