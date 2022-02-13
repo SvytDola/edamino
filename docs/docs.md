@@ -5,6 +5,8 @@
     * [Send sticker](#send-sticker)
     * [Send embed](#send-embed)
     * [Wait for](#wait-for)
+    * [Simulated typing and recording](#typing-bot)
+    * [How to mention a user in a chat room](#mention-chat)
 
 * [Events](#event)
     * [on_ready](#on-ready-event)
@@ -13,6 +15,8 @@
 
 * [Decorator command capabilities](#command)
     * [Additional parameters](#command-parameters)
+    * [You can reserve several commands](#command-reserve)
+    * [Prefix](#prefix)
 
 <br><br>
 
@@ -78,7 +82,7 @@ bot = Bot('email', 'password', 'prefix')
 
 
 @bot.command('sticker')
-async def on_gif(ctx: Context):
+async def on_sticker(ctx: Context):
     await ctx.send_sticker('sticker id')
 
 
@@ -126,6 +130,48 @@ async def on_check(ctx: Context):
 
     msg = await bot.wait_for(check=check)
     await ctx.send('Ok', reply=msg.messageId)
+
+
+bot.start()
+```
+
+## Simulated typing and recording <a id=typing-bot>
+```py
+from edamino import Bot, Context
+from edamino.objects import Message
+from asyncio import sleep
+
+bot = Bot('email', 'password', 'prefix')
+
+
+@bot.command('typing')
+async def on_typing(ctx: Context):
+    async with ctx.typing():
+        await sleep(3)
+        await ctx.reply('✔')
+
+
+@bot.command(['rec', 'recording'])
+async def on_ping(ctx: Context):
+    async with ctx.recording():
+        await sleep(3)
+        await ctx.reply('🎁')
+
+
+bot.start()
+```
+
+## How to mention a user in a chat room <a id=mention-chat>
+```py
+from edamino import Bot, Context
+
+
+bot = Bot('email', 'password', 'prefix')
+
+
+@bot.command('mention')
+async def on_m(ctx: Context):
+    await ctx.reply(f'<$@{ctx.msg.author.nickname}$>', mentions=[ctx.msg.uid])
 
 
 bot.start()
@@ -185,7 +231,7 @@ bot = Bot(email='email', password='password', prefix="/")
 # This event will accept absolutely all types of messages
 @bot.event(message_types=api.MessageType.ALL, media_types=api.MediaType.ALL)
 async def on_message(ctx: Context):
-    logger.info(str(ctx.msg.content))
+    print(ctx.msg)
 
 
 # This event will be triggered if someone has entered the chat room.
@@ -218,7 +264,7 @@ async def on_say(ctx: Context, args: str)
 
 
 @bot.command('get')
-async def on_send(ctx: Context, link: str):
+async def on_get(ctx: Context, link: str):
     """
     User: get https://aminoapps/c/anime
     Bot: Community id
@@ -226,6 +272,43 @@ async def on_send(ctx: Context, link: str):
     info = await ctx.get_info_link(link)
 
     await ctx.reply(str(info.community.ndcId))
+
+
+bot.start()
+```
+
+## You can reserve several commands <a id=command-reserve>
+
+```py
+from edamino import Bot, Context
+
+bot = Bot(email='email', password='password', prefix="/")
+
+
+@bot.commnad(['play', 'p'])
+async def on_example(ctx: Context):
+    await ctx.reply('Good! 🎉')
+
+
+bot.start()
+```
+
+
+## Prefix <a id=prefix>
+**NOTE: You can make a separate prefix for your command.**
+```py
+from edamino import Bot, Context
+
+bot = Bot(email='email', password='password', prefix="/")
+
+
+@bot.commnad('println(', prefix='System.out.')
+async def on_print(ctx: Context, args: str):
+    """
+    User: System.out.println(lala)
+    Bot: lala
+    """
+    await ctx.reply(args.replace(')'))
 
 
 bot.start()

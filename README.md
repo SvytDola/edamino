@@ -29,6 +29,8 @@ if __name__ == '__main__':
 
 **[Examples](https://github.com/SvytDola/edamino/blob/master/docs/docs.md)**
 
+**[Translated documentation into Spanish. Created by drevenzz#4251.](https://github.com/drevenzz/DocsEdAminoSpanish)**
+
 
 ![](https://media.discordapp.net/attachments/868188677602422804/931159730393591870/anim.gif)
 
