@@ -73,6 +73,39 @@ async def on_image(ctx: Context):
 bot.start()
 ```
 
+## Send gif <a id=send-gif>
+```py
+from edamino import Bot, Context
+from edamino.api import File
+
+bot = Bot('email', 'password', 'prefix')
+
+
+@bot.command('gif')
+async def on_gif(ctx: Context):
+    gif = File.load('path_to_file')
+    await ctx.send_gif(gif)
+
+    # You can also upload an gif asynchronously
+
+    gif = await File.async_load('path_to_file')
+    await ctx.send_gif(gif)
+
+    # You can also download yourself
+
+    with open('path_to_file', 'rb') as file:
+        gif = file.read()
+
+    await ctx.send_gif(gif)
+
+    # You can even download an gif from the internet
+
+    gif = await ctx.download_from_link('link_to_gif')
+    await ctx.send_gif(gif)
+
+
+bot.start()
+```
 ## Send sticker <a id=send-sticker>
 
 ```py
