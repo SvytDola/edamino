@@ -300,7 +300,7 @@ class Bot:
                 version = response['info']['version']
 
                 with open(f'{Path(__file__).parent}/__init__.py') as f:
-                    __version__ = search(r'.[0-9].[0-9].[0-9].[0-9]', f.read()).group()[1:]
+                    __version__ = search(r"'\d*.\d*.\d*.\d*'", f.read()).group().replace("'", '')
                 if __version__ != version:
                     log.info(f'Please update to the latest version: {version}. Current version: {__version__}')
 

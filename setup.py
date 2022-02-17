@@ -2,8 +2,10 @@ from setuptools import setup, find_packages
 from re import search
 
 with open(f'edamino/__init__.py') as f:
-    __version__ = search(r'.[0-9].[0-9].[0-9].[0-9]', f.read()).group()[1:]
+    __version__ = search(r"'\d*.\d*.\d*.\d*'", f.read()).group().replace("'", '')
 
+    print(__version__)
+    
 with open('README.md', 'r') as stream:
     long_description = stream.read()
 
