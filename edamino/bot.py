@@ -198,13 +198,13 @@ class Bot:
                     future.set_result(msg)
                 self.futures.clear()
 
-            if msg.author.uid != self.uid:
+            if msg.uid != self.uid:
                 if ON_MENTION is not None:
                     uids = ()
                     with suppress(Exception):
                         uids = (u.uid for u in msg.extensions.mentionedArray)
                     with suppress(Exception):
-                        if self.uid in uids or self.uid == msg.extensions.replyMessage.author.uid:
+                        if self.uid in uids or self.uid == msg.extensions.replyMessage.uid:
                             self.loop.create_task(ON_MENTION(self.get_context(self.client, msg, self.ws)))
 
                 for handler in HANDLERS_EVENTS:
@@ -222,6 +222,7 @@ class Bot:
                             if '-h' in msg.content:
                                 await context.reply(handler.description)
                                 continue
+                            
                             args = [context]
                             current_command = handler.commands[is_command_list.index(True)]
                             content = msg.content[len(current_command):]
