@@ -908,3 +908,11 @@ class Client:
 
         response = await self.request('POST', f'chat/thread/{chat_id}/message', data)
         return objects.Message(**response['message'])
+
+    async def get_user_following(self, user_id: str, start: int = 0, size: int = 25):
+        response = await self.request('GET', f'user-profile/{user_id}/joined?start={start}&size={size}')
+        return tuple(map(lambda user: objects.UserProfile(**user), response['userProfileList']))
+
+    async def get_user_followers(self, userId: str, start: int = 0, size: int = 25):
+        response = await self.request('GET', f'user-profile/{userId}/member?start={start}&size={size}')
+        return tuple(map(lambda user: objects.UserProfile(**user), response['userProfileList']))
