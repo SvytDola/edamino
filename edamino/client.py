@@ -913,6 +913,6 @@ class Client:
         response = await self.request('GET', f'user-profile/{user_id}/joined?start={start}&size={size}')
         return tuple(map(lambda user: objects.UserProfile(**user), response['userProfileList']))
 
-    async def get_user_followers(self, userId: str, start: int = 0, size: int = 25):
-        response = await self.request('GET', f'user-profile/{userId}/member?start={start}&size={size}')
+    async def get_user_followers(self, user_id: str, start: int = 0, size: int = 25):
+        response = await self.request('GET', f'user-profile/{user_id}/member?start={start}&size={size}')
         return tuple(map(lambda user: objects.UserProfile(**user), response['userProfileList']))
