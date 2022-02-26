@@ -2,10 +2,14 @@
 # edamino
 Async api for amino
 
-## Installation: 
+```
+Amino does not allow bots on its platform, so this library may become inactive once the app is updated.
+```
+
+# Installation: 
 `pip install ed-amino`
 
-### Example Bot.
+# Example Bot.
 ```py
 from edamino import Bot, Context, logger
 from edamino.objects import UserProfile
