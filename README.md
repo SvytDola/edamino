@@ -1,4 +1,4 @@
-![](https://media.discordapp.net/attachments/807254355127566357/947572597481152582/PicsArt_02-27-10.13.56.png?width=863&height=288)
+![Logo. Created by Resq#5909](https://media.discordapp.net/attachments/807254355127566357/947572597481152582/PicsArt_02-27-10.13.56.png?width=600&height=200)
 
 # edamino
 An unofficial python wrapper for the async Amino API, based off aiohttp.
