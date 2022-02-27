@@ -285,7 +285,8 @@ class Client:
             try:
                 return await self.session.ws_connect(
                     f"wss://ws{i}.narvii.com/?signbody={self.device_id}%7C{timestamp}",
-                    headers=headers
+                    headers=headers,
+                    proxy=self.proxy
                 )
             except WSServerHandshakeError:
                 continue

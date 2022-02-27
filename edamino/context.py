@@ -177,3 +177,120 @@ class Context:
 
     async def get_message_info(self):
         return await self.client.get_message_info(self.msg.threadId, self.msg.messageId)
+
+    async def actions(self, actions: List[str], thread_type: int, chat_id: Optional[str] = None,
+                      ndc_id: Optional[int] = None):
+        data = {
+            "o": {
+                "actions": actions,
+                "target": f"ndc://x{self.msg.ndcId}/chat-thread/{self.msg.threadId if chat_id is None else chat_id}",
+                "ndcId": self.msg.ndcId if ndc_id is None else ndc_id,
+                "params": {
+                    "duration": 12800,
+                    "membershipStatus": 1,
+                    "threadType": thread_type
+                },
+                "id": "1715976"
+            },
+            "t": 306
+        }
+        await self.ws.send_json(data)
+
+    async def join_channel(self, channel_type: int, chat_id: Optional[str] = None, ndc_id: Optional[int] = None):
+        data = {
+            "o": {
+                "ndcId": self.msg.ndcId if ndc_id is None else ndc_id,
+                "threadId": self.msg.threadId if chat_id is None else chat_id,
+                "channelType": channel_type,
+                "id": "10335436"
+            },
+            "t": 108
+        }
+        await self.ws.send_json(data)
+
+    async def create_channel(self,
+                             chat_id: Optional[str] = None,
+                             ndc_id: Optional[int] = None):
+        data = {
+            "o": {
+                "id": "1300666754",
+                "ndcId": self.msg.ndcId if ndc_id is None else ndc_id,
+                "threadId": self.msg.threadId if chat_id is None else chat_id,
+            },
+            "t": 200
+        }
+        await self.ws.send_json(data)
+
+    async def play_video(self,
+                         background: str,
+                         path: str,
+                         title: str,
+                         duration: float,
+                         chat_id: Optional[str] = None,
+                         ndc_id: Optional[int] = None):
+        await self.create_channel(chat_id, ndc_id)
+        data = {
+            "o": {
+                "ndcId": self.msg.ndcId if ndc_id is None else ndc_id,
+                "threadId": self.msg.threadId if chat_id is None else chat_id,
+                "playlist": {
+                    "currentItemIndex": 0,
+                    "currentItemStatus": 1,
+                    "items": [{
+                        "author": None,
+                        "duration": duration,
+                        "isDone": False,
+                        "mediaList": [[100, background, None]],
+                        "title": title,
+                        "type": 1,
+                        "url": f"file://{path}"
+                    }]
+                },
+                "id": "3423239"
+            },
+            "t": 120
+        }
+
+        await self.ws.send_json(data)
+
+    async def play_video_is_done(self,
+                                 background: str,
+                                 path: str,
+                                 title: str,
+                                 duration: float,
+                                 chat_id: Optional[str] = None,
+                                 ndc_id: Optional[int] = None):
+        data = {
+            "o": {
+                "ndcId": self.msg.ndcId if ndc_id is None else ndc_id,
+                "threadId": self.msg.threadId if chat_id is None else chat_id,
+                "playlist": {
+                    "currentItemIndex": 0,
+                    "currentItemStatus": 2,
+                    "items": [{
+                        "author": None,
+                        "duration": duration,
+                        "isDone": True,
+                        "mediaList": [[100, background, None]],
+                        "title": title,
+                        "type": 1,
+                        "url": f"file://{path}"
+                    }]
+                },
+                "id": "3423239"
+            },
+            "t": 120
+        }
+        await self.ws.send_json(data)
+
+    async def join_thread(self, join_role: int = 1, chat_id: Optional[str] = None, ndc_id: Optional[int] = None):
+        data = {
+            "o": {
+                "ndcId": self.msg.ndcId if ndc_id is None else ndc_id,
+                "threadId": self.msg.threadId if chat_id is None else chat_id,
+                "joinRole": join_role,
+                "id": "10335106"
+            },
+            "t": 112
+        }
+        await self.ws.send_json(data)

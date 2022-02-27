@@ -8,7 +8,7 @@ from ujson import loads
 from .client import Client
 from .logger import logger as log
 from .context import Context
-from .objects import Message, UserProfile
+from .objects import Message, UserProfile, SocketAnswer
 from .api import MessageType, MediaType, WebSocketConnectError
 
 from dotenv import load_dotenv
@@ -28,7 +28,7 @@ HANDLERS_COMMANDS: List[Handler] = []
 HANDLERS_EVENTS: List[Handler] = []
 CALLBACKS: List[Callable[[Client], Awaitable[None]]] = []
 
-ON_READY: Optional[Callable[[UserProfile], Awaitable[None]]] = None
+ON_READY: Optional[Callable] = None
 ON_MENTION: Optional[Callable[[Context], Awaitable[None]]] = None
 
 
@@ -61,11 +61,11 @@ def get_annotations(handler: Handler, words: List[str], command: str, message: s
 class Bot:
     # Most of the features are taken from the amsync library :D
 
-    __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp', 'ws', 'client', 'futures')
+    __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp', 'ws', 'client', 'futures', 'proxy')
 
     loop: Optional[AbstractEventLoop]
 
-    def __init__(self, email: str, password: str, prefix: str = ""):
+    def __init__(self, email: str, password: str, prefix: str = "", proxy: Optional[str] = None):
         self.uid = None
         self.sid = None
         self.loop = None
@@ -74,11 +74,12 @@ class Bot:
         self.prefix = prefix.lower()
         self.timestamp = None
         self.ws = None
+        self.proxy = proxy
         self.futures: List[Future] = []
         self.client = None
 
     def get_context(self, client: Client, msg: Message, ws):
-        client_context = Client(session=client.session, device_id=client.device_id, com_id=msg.ndcId)
+        client_context = Client(session=client.session, device_id=client.device_id, com_id=msg.ndcId, proxy=self.proxy)
         client_context.login_sid(self.sid, self.uid)
         context = Context(msg=msg, client=client_context, ws=ws)
         return context
@@ -190,13 +191,16 @@ class Bot:
         return register_handler
 
     async def __call__handlers(self, data: Dict):
-        if data['t'] == 1000:
-            msg = Message(**data['o']['chatMessage'], ndcId=data['o']['ndcId'])
+        s = SocketAnswer(**data)
+        if self.futures:
+            for future in self.futures:
+                future.set_result(s)
+            self.futures.clear()
 
-            if self.futures:
-                for future in self.futures:
-                    future.set_result(msg)
-                self.futures.clear()
+        if s.t == 1000:
+
+            msg = s.o.chatMessage
+            msg.ndcId = s.o.ndcId
 
             if msg.uid != self.uid:
                 if ON_MENTION is not None:
@@ -222,7 +226,7 @@ class Bot:
                             if '-h' in msg.content:
                                 await context.reply(handler.description)
                                 continue
-                            
+
                             args = [context]
                             current_command = handler.commands[is_command_list.index(True)]
                             content = msg.content[len(current_command):]
@@ -261,19 +265,15 @@ class Bot:
             try:
                 if int(time()) - timestamp >= 180:
                     self.ws = await self.client.ws_connect()
-                    log.info('Reconnected.')
                     timestamp = int(time())
+                    if ON_READY:
+                        await ON_READY()
 
-                if self.ws.closed:
                     if time() - self.timestamp > 60 * 60 * 12:
                         login = await self.client.login(self.email, self.password)
-                        log.info('Login.')
                         self.sid = login.sid
                         self.uid = login.auid
                         self.update_cfg()
-
-                    self.ws = await self.client.ws_connect()
-                    log.info('Reconnected.')
 
                 data = await self.ws.receive_json(loads=loads)
                 await self.__call__handlers(data)
@@ -290,7 +290,7 @@ class Bot:
         self.check_cfg()
         self.loop = loop if loop is not None else get_event_loop()
 
-        self.client = Client(device_id=device_id)
+        self.client = Client(device_id=device_id, proxy=self.proxy)
 
         try:
             if check_updates:
@@ -336,7 +336,7 @@ class Bot:
 
         return callback
 
-    async def wait_for(self, check: Callable[[Message], bool], timeout: Optional[float] = None) -> Message:
+    async def wait_for(self, check: Callable[[SocketAnswer], bool], timeout: Optional[float] = None) -> SocketAnswer:
         while True:
             index = len(self.futures)
             try:

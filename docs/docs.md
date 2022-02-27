@@ -151,18 +151,19 @@ bot.start()
 
 ```py
 from edamino import Bot, Context
-from edamino.objects import Message
+from edamino.objects import SocketAnswer
 
 bot = Bot('email', 'password', 'prefix')
 
 
 @bot.command('check')
 async def on_check(ctx: Context):
-    def check(m: Message):
-        return m.content == 'Sh'
+    def check(s: SocketAnswer):
+        if s.o.chatMessage.content is not None:
+            return s.o.chatMessage.content == 'Sh'
 
-    msg = await bot.wait_for(check=check)
-    await ctx.send('Ok', reply=msg.messageId)
+    res = await bot.wait_for(check=check)
+    await ctx.send('Ok', reply=res.o.chatMessage.messageId)
 
 
 bot.start()

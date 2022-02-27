@@ -4,7 +4,7 @@ import random
 from asyncio import sleep
 
 from edamino import Context, logger, Client, api
-from edamino.objects import UserProfile, Message
+from edamino.objects import UserProfile, SocketAnswer
 
 from config import bot
 
@@ -57,11 +57,23 @@ async def on_count(ctx: Context):
     await ctx.reply(str(response["userProfileCount"]))
 
 
-@bot.command('check')
-async def on_check(ctx: Context):
-    msg = await bot.wait_for(check=lambda m: m.content == 'count' and m.uid == ctx.msg.uid, timeout=60)
+def f(s: SocketAnswer):
+    return s.o.channelKey is not None
 
-    await ctx.send(m.content, reply=msg.messageId)
+
+@bot.command('start')
+async def on_check(ctx: Context):
+    await ctx.join_thread(1)
+    await ctx.join_channel(5)
+    image = await ctx.download_from_link(
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Gull_portrait_ca_usa.jpg/1280px-Gull_portrait_ca_usa.jpg'
+    )
+    background = await ctx.client.upload_media(image, api.ContentType.IMAGE_JPG)
+
+    await ctx.play_video(background, '/storage/emulated/0/Download/video.mp4', 'video.mp4', 300)
+    s = await bot.wait_for(f)
+    print(s.o)
+    await ctx.play_video_is_done(background, '/storage/emulated/0/Download/video.mp4', 'video.mp4', 300)
 
 
 @bot.background_task

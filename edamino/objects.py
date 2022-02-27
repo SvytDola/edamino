@@ -335,7 +335,6 @@ class TipInfo(BaseModel):
     tippedCoins: Optional[int]
 
 
-
 class Blog(BaseModel):
     globalVotesCount: Optional[int]
     globalVotedValue: Optional[int]
@@ -718,6 +717,26 @@ class WalletInfo(BaseModel):
     totalBusinessCoinsFloat: Optional[float]
     totalCoins: Optional[int]
     totalCoinsFloat: Optional[float]
+
+
+class O(BaseModel):
+    ndcId: Optional[int]
+    chatMessage: Optional[Message]
+    alertOption: Optional[int]
+    membershipStatus: Optional[int]
+    channelKey: Optional[str]
+    channelName: Optional[str]
+
+    channelUid: Optional[int]
+    expiredTime: Optional[int]
+    ndcId: Optional[int]
+    threadId: Optional[str]
+    id: Optional[str]
+
+
+class SocketAnswer(BaseModel):
+    t: Optional[int]
+    o: Optional[O]
 
 
 class Wiki(BaseModel):
