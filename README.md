@@ -1,15 +1,19 @@
-![PyPI](https://img.shields.io/pypi/v/ed-amino.svg?style=flat-square) ![PyPI - License](https://img.shields.io/pypi/l/ed-amino.svg?style=flat-square)
+![](https://media.discordapp.net/attachments/807254355127566357/947572597481152582/PicsArt_02-27-10.13.56.png?width=863&height=288)
+
 # edamino
-Async api for amino
+An unofficial python wrapper for the async Amino API, based off aiohttp.
 
+
+![PyPI](https://img.shields.io/pypi/v/ed-amino.svg?style=flat-square)
+![PyPI - License](https://img.shields.io/pypi/l/ed-amino.svg?style=flat-square)
+
+
+# Installing
 ```
-Amino does not allow bots on its platform, so this library may become inactive once the app is updated.
+pip install ed-amino
 ```
 
-# Installation: 
-`pip install ed-amino`
-
-# Example Bot.
+# Example
 ```py
 from edamino import Bot, Context, logger
 from edamino.objects import UserProfile

@@ -65,6 +65,7 @@ def f(s: SocketAnswer):
 async def on_check(ctx: Context):
     await ctx.join_thread(1)
     await ctx.join_channel(5)
+
     image = await ctx.download_from_link(
         'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Gull_portrait_ca_usa.jpg/1280px-Gull_portrait_ca_usa.jpg'
     )
@@ -72,7 +73,7 @@ async def on_check(ctx: Context):
 
     await ctx.play_video(background, '/storage/emulated/0/Download/video.mp4', 'video.mp4', 300)
     s = await bot.wait_for(f)
-    print(s.o)
+    print(s.o.channelKey)
     await ctx.play_video_is_done(background, '/storage/emulated/0/Download/video.mp4', 'video.mp4', 300)
 
 
