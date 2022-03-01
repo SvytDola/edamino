@@ -91,6 +91,9 @@ class Context:
     async def leave_community(self):
         return await self.client.leave_community()
 
+    async def get_chats(self, start: int = 0, size: int = 100):
+        return await self.client.get_chats(start, size)
+    
     async def join_chat(self, chat_id: str):
         return await self.client.join_chat(chat_id)
 
