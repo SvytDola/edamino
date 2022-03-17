@@ -43,11 +43,18 @@ class SigService:
         return await self.session.ws_connect("wss://ed-generators.herokuapp.com/ws")
 
     async def get(self, json: str):
-        if not self.ws_connection:
-            self.ws_connection = await self.ws_connect()
+        while True:
+            try:
+                if not self.ws_connection:
+                    self.ws_connection = await self.ws_connect()
 
-        await self.ws_connection.send_str(json)
-        return await self.ws_connection.receive_str()
+                await self.ws_connection.send_str(json)
+                return await self.ws_connection.receive_str()
+            except ConnectionResetError:
+                print("ERROR")
+                self.ws_connection = await self.ws_connect()
+            except TypeError:
+                continue
 
 
 class Client:
