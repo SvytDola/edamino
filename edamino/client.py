@@ -51,7 +51,6 @@ class SigService:
                 await self.ws_connection.send_str(json)
                 return await self.ws_connection.receive_str()
             except ConnectionResetError:
-                print("ERROR")
                 self.ws_connection = await self.ws_connect()
             except TypeError:
                 continue

@@ -294,3 +294,9 @@ class Context:
             "t": 112
         }
         await self.ws.send_json(data)
+
+    async def edit_profile(self, *args, **kwargs):
+        return await self.client.edit_profile(*args, **kwargs)
+
+    async def get_chats(self, start: int = 0, size: int = 25):
+        return await self.client.get_chats(start, size)
