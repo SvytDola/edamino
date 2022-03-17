@@ -57,6 +57,6 @@ If you encounter a bug, please open an [issue].
 
 This README is available in other languages:
 
-- [Spainsh](https://github.com/drevenzz/DocsEdAminoSpanish)
+- [Spanish](https://github.com/drevenzz/DocsEdAminoSpanish)
 
 Only this README file is guaranteed to be up-to-date.
