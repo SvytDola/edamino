@@ -18,8 +18,6 @@ from typing import (
 )
 from time import time, timezone
 from base64 import b64encode
-from hashlib import sha1
-from hmac import new
 from binascii import hexlify
 from os import urandom
 from uuid import UUID
@@ -31,12 +29,34 @@ def get_timestamp() -> int:
     return int(time() * 1000)
 
 
+class SigService:
+    __slots__ = (
+        'session',
+        'ws_connection'
+    )
+
+    def __init__(self) -> None:
+        self.session = ClientSession()
+        self.ws_connection: Optional[ClientWebSocketResponse] = None
+
+    async def ws_connect(self) -> ClientWebSocketResponse:
+        return await self.session.ws_connect("wss://ed-generators.herokuapp.com/ws")
+
+    async def get(self, json: str):
+        if not self.ws_connection:
+            self.ws_connection = await self.ws_connect()
+
+        await self.ws_connection.send_str(json)
+        return await self.ws_connection.receive_str()
+
+
 class Client:
     __slots__ = (
         'ndc_id',
         'session',
         'headers',
-        'proxy'
+        'proxy',
+        'sigService'
     )
 
     ndc_id: str
@@ -78,10 +98,12 @@ class Client:
         self.headers = {
             "NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID
         }
+        self.sigService = SigService()
         self.session = session if session is not None else ClientSession(json_serialize=dumps)
 
     async def __aexit__(self, *args) -> None:
         await self.session.close()
+        await self.sigService.session.close()
 
     async def __aenter__(self) -> 'Client':
         return self
@@ -90,18 +112,8 @@ class Client:
         self.sid = sid
         self.uid = uid
 
-    @staticmethod
-    def gen_sig(data):
-        signature = b64encode(
-            bytes.fromhex("32") +
-            new(
-                bytes.fromhex("FBF98EB3A07A9042EE5593B10CE9F3286A69D4E2"),
-                data.encode("utf-8"),
-                sha1
-            ).digest()
-        ).decode("utf-8")
-
-        return signature
+    async def gen_sig(self, data):
+        return await self.sigService.get(data)
 
     def set_ndc(self, com_id: int) -> None:
         if com_id != 0:
@@ -128,7 +140,7 @@ class Client:
         if json is not None:
             json['timestamp'] = get_timestamp()
             data = dumps(json)
-            headers['NDC-MSG-SIG'] = self.gen_sig(data)
+            headers['NDC-MSG-SIG'] = await self.gen_sig(data)
 
         if content_type is not None:
             headers = copy(self.headers)
@@ -279,7 +291,7 @@ class Client:
         headers = {
             "NDCAUTH": f"sid={self.sid}",
             "NDCDEVICEID": self.device_id,
-            "NDC-MSG-SIG": self.gen_sig(url)
+            "NDC-MSG-SIG": await self.gen_sig(url)
         }
         for i in range(4, 0, -1):
             try:

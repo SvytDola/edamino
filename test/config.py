@@ -7,4 +7,4 @@ load_dotenv('.env')
 EMAIL = getenv('email')
 PASSWORD = getenv('password')
 
-bot = Bot(email=EMAIL, password=PASSWORD, prefix="/", proxy="http://127.0.0.1:8888")
+bot = Bot(email=EMAIL, password=PASSWORD, prefix="/")

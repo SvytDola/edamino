@@ -5,7 +5,7 @@ from io import BytesIO
 from ujson import dumps
 from aiofile import async_open
 
-DEVICE_ID = "3298A71AFE0EA0B7EDDAFA2337B38488E23D8060A98946A75EAE99EBE7FA2F0B4D4212428CB8B2253D"
+DEVICE_ID = "42462cbb2e94b32cb1a10d069f1f8d75af00cbb8f33d04e4bf88640b07057e73a05423fc3d1dac9c7a"
 
 
 class SourceTypes:
