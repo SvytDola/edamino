@@ -92,13 +92,17 @@ class Client:
                  device_id: Optional[str] = None,
                  com_id: int = 0,
                  proxy: Optional[str] = None,
-                 session: Optional[ClientSession] = None) -> None:
+                 session: Optional[ClientSession] = None,
+                 sigService: Optional[SigService] = None) -> None:
         self.proxy = proxy
         self.set_ndc(com_id)
         self.headers = {
             "NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID
         }
-        self.sigService = SigService()
+        if sigService is None:
+            self.sigService = SigService()
+        else:
+            self.sigService = sigService
         self.session = session if session is not None else ClientSession(json_serialize=dumps)
 
     async def __aexit__(self, *args) -> None:
