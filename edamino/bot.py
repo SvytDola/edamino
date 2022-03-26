@@ -326,7 +326,6 @@ class Bot:
             log.info("Goodbye. ^^")
         finally:
             self.loop.run_until_complete(self.client.session.close())
-            self.loop.run_until_complete(self.client.sigService.session.close())
 
     @staticmethod
     def background_task(callback: Callable[[Client], Awaitable[None]]):

@@ -34,8 +34,7 @@ class Client:
         'ndc_id',
         'session',
         'headers',
-        'proxy',
-        'sigService'
+        'proxy'
     )
 
     ndc_id: str
@@ -81,7 +80,6 @@ class Client:
 
     async def __aexit__(self, *args) -> None:
         await self.session.close()
-        await self.sigService.session.close()
 
     async def __aenter__(self) -> 'Client':
         return self
