@@ -45,6 +45,11 @@ async def on_send(ctx: Context, coins: int, link: str):
     await ctx.reply(f'{coins} {link}')
 
 
+@bot.event([api.MessageType.STICKER], [api.MediaType.STICKER])
+async def on_st(ctx: Context):
+    await ctx.send_sticker(ctx.msg.extensions.originalStickerId)
+
+
 @bot.command('say')
 async def _(ctx: Context, args: str):
     await ctx.reply(args)

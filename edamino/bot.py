@@ -79,7 +79,7 @@ class Bot:
         self.client = None
 
     def get_context(self, client: Client, msg: Message, ws):
-        client_context = Client(session=client.session, device_id=client.device_id, com_id=msg.ndcId, proxy=self.proxy, sigService=client.sigService)
+        client_context = Client(session=client.session, device_id=client.device_id, com_id=msg.ndcId, proxy=self.proxy)
         client_context.login_sid(self.sid, self.uid)
         context = Context(msg=msg, client=client_context, ws=ws)
         return context

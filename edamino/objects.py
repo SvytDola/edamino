@@ -688,10 +688,38 @@ class Message(BaseModel):
     chatBubble: Optional[ChatBubble]
 
 
+class StickerCollectionSummary(BaseModel):
+    status: Optional[int]
+    collectionType: Optional[int]
+    uid: Optional[str]
+    modifiedTime: Optional[str]
+    smallIcon: Optional[str]
+    stickersCount: Optional[int]
+    usedCount: Optional[int]
+    icon: Optional[str]
+    name: Optional[str]
+
+
+class Sticker(BaseModel):
+    status: Optional[int]
+    iconV2: Optional[str]
+    stickerId: Optional[str]
+    usedCount: Optional[int]
+    icon: Optional[str]
+    smallIconV2: Optional[str]
+    name: Optional[str]
+    smallIcon: Optional[str]
+    stickerCollectionId: Optional[str]
+    mediumIcon: Optional[str]
+    stickerCollectionSummary: Optional[StickerCollectionSummary]
+
+
 class Extensions(BaseModel):
     replyMessageId: Optional[str]
     replyMessage: Optional[Message]
     mentionedArray: Optional[Tuple[Mention, ...]]
+    sticker: Optional[Sticker]
+    originalStickerId: Optional[str]
 
 
 class Paging(BaseModel):

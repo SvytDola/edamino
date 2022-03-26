@@ -29,33 +29,6 @@ def get_timestamp() -> int:
     return int(time() * 1000)
 
 
-class SigService:
-    __slots__ = (
-        'session',
-        'ws_connection'
-    )
-
-    def __init__(self) -> None:
-        self.session = ClientSession()
-        self.ws_connection: Optional[ClientWebSocketResponse] = None
-
-    async def ws_connect(self) -> ClientWebSocketResponse:
-        return await self.session.ws_connect("wss://ed-generators.herokuapp.com/ws")
-
-    async def get(self, json: str):
-        while True:
-            try:
-                if not self.ws_connection:
-                    self.ws_connection = await self.ws_connect()
-
-                await self.ws_connection.send_str(json)
-                return await self.ws_connection.receive_str()
-            except ConnectionResetError:
-                self.ws_connection = await self.ws_connect()
-            except TypeError:
-                continue
-
-
 class Client:
     __slots__ = (
         'ndc_id',
@@ -98,17 +71,12 @@ class Client:
                  device_id: Optional[str] = None,
                  com_id: int = 0,
                  proxy: Optional[str] = None,
-                 session: Optional[ClientSession] = None,
-                 sigService: Optional[SigService] = None) -> None:
+                 session: Optional[ClientSession] = None) -> None:
         self.proxy = proxy
         self.set_ndc(com_id)
         self.headers = {
             "NDCDEVICEID": device_id if device_id is not None else api.DEVICE_ID
         }
-        if sigService is None:
-            self.sigService = SigService()
-        else:
-            self.sigService = sigService
         self.session = session if session is not None else ClientSession(json_serialize=dumps)
 
     async def __aexit__(self, *args) -> None:
@@ -123,7 +91,8 @@ class Client:
         self.uid = uid
 
     async def gen_sig(self, data):
-        return await self.sigService.get(data)
+        async with self.session.get(f"https://ed-generators.herokuapp.com/signature?data={data}") as resp:
+            return await resp.text()
 
     def set_ndc(self, com_id: int) -> None:
         if com_id != 0:
