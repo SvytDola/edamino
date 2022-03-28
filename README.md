@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
 ![](https://media.discordapp.net/attachments/868188677602422804/931159730393591870/anim.gif)
 
-# Exmaples
+# Examples
 
  - [You can see all the examples at this link.](https://github.com/SvytDola/edamino/blob/master/docs/docs.md)
 
