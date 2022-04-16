@@ -4,7 +4,7 @@ from .api import Embed, LinkSnippet
 from typing import (
     List,
     Optional,
-    Literal, Callable
+    Literal
 )
 from contextlib import asynccontextmanager, contextmanager
 from ujson import dumps
