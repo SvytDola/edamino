@@ -1,11 +1,23 @@
 from base64 import b64encode
+from hmac import new
+from os import urandom
 from typing import Optional, Dict, Tuple, Union, TypeVar
 from zipfile import ZipFile, ZIP_DEFLATED
 from io import BytesIO
 from ujson import dumps
 from aiofile import async_open
+from hashlib import sha1
+
 
 DEVICE_ID = "42462cbb2e94b32cb1a10d069f1f8d75af00cbb8f33d04e4bf88640b07057e73a05423fc3d1dac9c7a"
+SIG_KEY = bytes.fromhex("F8E7A61AC3F725941E3AC7CAE2D688BE97F30B93")
+DEV_KEY = bytes.fromhex("02B258C63559D8804321C5D5065AF320358D366F")
+
+
+def generate_device_id(device_info: Optional[str] = None) -> str:
+    device_info = urandom(20) if device_info is None else device_info
+    mac = new(DEV_KEY, bytes.fromhex("42") + device_info, sha1)
+    return f"42{device_info.hex()}{mac.hexdigest()}".upper()
 
 
 class SourceTypes:
@@ -21,7 +33,7 @@ class ContentType:
     APPLICATION_URL_ENCODED: str = "application/x-www-form-urlencoded"
     APPLICATION_JSON: str = 'application/json; charset=utf-8'
     APPLICATION_OCTET_STREAM: str = 'application/octet-stream'
-    APPLICATION = "application/x-www-form-urlencoded"
+    APPLICATION: str = "application/x-www-form-urlencoded"
 
 
 class InvalidRequest(Exception):

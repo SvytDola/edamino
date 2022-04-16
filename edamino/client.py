@@ -1,5 +1,8 @@
 from contextlib import suppress
 from copy import copy
+from hashlib import sha1
+from hmac import new
+
 from edamino import objects, api
 from ujson import dumps, loads
 from aiohttp import (
@@ -88,9 +91,16 @@ class Client:
         self.sid = sid
         self.uid = uid
 
-    async def gen_sig(self, data):
-        async with self.session.get(f"https://ed-generators.herokuapp.com/signature?data={data}") as resp:
-            return await resp.text()
+    def gen_sig(self, data):
+        signature = b64encode(
+            bytes.fromhex("42") +
+            new(
+                api.SIG_KEY,
+                data.encode("utf-8"),
+                sha1
+            ).digest()
+        ).decode("utf-8")
+        return signature
 
     def set_ndc(self, com_id: int) -> None:
         if com_id != 0:
@@ -117,7 +127,7 @@ class Client:
         if json is not None:
             json['timestamp'] = get_timestamp()
             data = dumps(json)
-            headers['NDC-MSG-SIG'] = await self.gen_sig(data)
+            headers['NDC-MSG-SIG'] = self.gen_sig(data)
 
         if content_type is not None:
             headers = copy(self.headers)
@@ -268,7 +278,7 @@ class Client:
         headers = {
             "NDCAUTH": f"sid={self.sid}",
             "NDCDEVICEID": self.device_id,
-            "NDC-MSG-SIG": await self.gen_sig(url)
+            "NDC-MSG-SIG": self.gen_sig(url)
         }
         for i in range(4, 0, -1):
             try:
