@@ -9,14 +9,15 @@ from aiofile import async_open
 from hashlib import sha1
 
 
+SIG_KEY = bytes.fromhex("EAB4F1B9E3340CD1631EDE3B587CC3EBEDF1AFA9")
+DEVICE_KEY = bytes.fromhex("AE49550458D8E7C51D566916B04888BFB8B3CA7D")
+
 DEVICE_ID = "42462cbb2e94b32cb1a10d069f1f8d75af00cbb8f33d04e4bf88640b07057e73a05423fc3d1dac9c7a"
-SIG_KEY = bytes.fromhex("F8E7A61AC3F725941E3AC7CAE2D688BE97F30B93")
-DEV_KEY = bytes.fromhex("02B258C63559D8804321C5D5065AF320358D366F")
 
 
 def generate_device_id(device_info: Optional[str] = None) -> str:
     device_info = urandom(20) if device_info is None else device_info
-    mac = new(DEV_KEY, bytes.fromhex("42") + device_info, sha1)
+    mac = new(DEV_KEY, bytes.fromhex("52") + device_info, sha1)
     return f"42{device_info.hex()}{mac.hexdigest()}".upper()
 
 
