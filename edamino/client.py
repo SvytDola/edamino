@@ -93,7 +93,7 @@ class Client:
 
     def gen_sig(self, data):
         signature = b64encode(
-            bytes.fromhex("42") +
+            bytes.fromhex("52") +
             new(
                 api.SIG_KEY,
                 data.encode("utf-8"),
