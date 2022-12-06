@@ -18,7 +18,7 @@ DEVICE_ID = "42462cbb2e94b32cb1a10d069f1f8d75af00cbb8f33d04e4bf88640b07057e73a05
 def generate_device_id(device_info: Optional[str] = None) -> str:
     device_info = urandom(20) if device_info is None else device_info
     mac = new(DEV_KEY, bytes.fromhex("52") + device_info, sha1)
-    return f"42{device_info.hex()}{mac.hexdigest()}".upper()
+    return f"52{device_info.hex()}{mac.hexdigest()}".upper()
 
 
 class SourceTypes:
