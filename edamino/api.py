@@ -11,15 +11,26 @@ from hashlib import sha1
 
 SIG_KEY = bytes.fromhex("EAB4F1B9E3340CD1631EDE3B587CC3EBEDF1AFA9")
 DEV_KEY = bytes.fromhex("AE49550458D8E7C51D566916B04888BFB8B3CA7D")
+PREFIX = bytes.fromhex("52")
 
-DEVICE_ID = "42462cbb2e94b32cb1a10d069f1f8d75af00cbb8f33d04e4bf88640b07057e73a05423fc3d1dac9c7a"
+DEVICE_ID = "52BDF65215F4FB0DA41872C8A77EBA7EB6E478437504BC1C94C5D80A9D44D94634DE1FD209608499A2"
 
 
 def generate_device_id(device_info: Optional[str] = None) -> str:
     device_info = urandom(20) if device_info is None else device_info
-    mac = new(DEV_KEY, bytes.fromhex("52") + device_info, sha1)
+    mac = new(DEV_KEY, PREFIX + device_info, sha1)
     return f"52{device_info.hex()}{mac.hexdigest()}".upper()
 
+def generate_signature(data: str):
+    signature = b64encode(
+        PREFIX +
+        new(
+            SIG_KEY,
+            data.encode("utf-8"),
+            sha1
+        ).digest()
+    ).decode("utf-8")
+    return signature
 
 class SourceTypes:
     USER_PROFILE: str = "UserProfileView"

@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from os import getenv
-from edamino import Bot
+from edamino import Bot, api
 
 load_dotenv('.env')
 
