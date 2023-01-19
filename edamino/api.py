@@ -8,29 +8,26 @@ from ujson import dumps
 from aiofile import async_open
 from hashlib import sha1
 
-
 SIG_KEY = bytes.fromhex("EAB4F1B9E3340CD1631EDE3B587CC3EBEDF1AFA9")
 DEV_KEY = bytes.fromhex("AE49550458D8E7C51D566916B04888BFB8B3CA7D")
-PREFIX = bytes.fromhex("52")
+PREFIX = "19"
+PREFIX_BYTES = bytes.fromhex(PREFIX)
 
-DEVICE_ID = "52BDF65215F4FB0DA41872C8A77EBA7EB6E478437504BC1C94C5D80A9D44D94634DE1FD209608499A2"
+DEVICE_ID = "19BDF65215F4FB0DA41872C8A77EBA7EB6E478437504BC1C94C5D80A9D44D94634DE1FD209608499A2"
 
 
 def generate_device_id(device_info: Optional[str] = None) -> str:
     device_info = urandom(20) if device_info is None else device_info
-    mac = new(DEV_KEY, PREFIX + device_info, sha1)
-    return f"52{device_info.hex()}{mac.hexdigest()}".upper()
+    mac = new(DEV_KEY, PREFIX_BYTES + device_info, sha1)
+    return f"{PREFIX}{device_info.hex()}{mac.hexdigest()}".upper()
+
 
 def generate_signature(data: str):
     signature = b64encode(
-        PREFIX +
-        new(
-            SIG_KEY,
-            data.encode("utf-8"),
-            sha1
-        ).digest()
-    ).decode("utf-8")
+        PREFIX_BYTES +
+        new(SIG_KEY, data.encode("utf-8"), sha1).digest()).decode("utf-8")
     return signature
+
 
 class SourceTypes:
     USER_PROFILE: str = "UserProfileView"
@@ -49,6 +46,7 @@ class ContentType:
 
 
 class InvalidRequest(Exception):
+
     def __init__(self, message: str, status: int, json: Dict) -> None:
         super().__init__(message)
         self.message = message
@@ -69,14 +67,8 @@ class HtmlError(Exception):
 
 
 class Embed:
-    __slots__ = (
-        'object_id',
-        'object_type',
-        'link',
-        'title',
-        'content',
-        'image'
-    )
+    __slots__ = ('object_id', 'object_type', 'link', 'title', 'content',
+                 'image')
 
     def __init__(self,
                  object_id: Optional[str] = None,
@@ -94,12 +86,18 @@ class Embed:
 
     def dict(self) -> Dict:
         return {
-            "objectId": self.object_id,
-            "objectType": self.object_type,
-            "link": self.link,
-            "title": self.title,
-            "content": self.content,
-            "mediaList": [[100, self.image, None]] if self.image is not None else None
+            "objectId":
+            self.object_id,
+            "objectType":
+            self.object_type,
+            "link":
+            self.link,
+            "title":
+            self.title,
+            "content":
+            self.content,
+            "mediaList":
+            [[100, self.image, None]] if self.image is not None else None
         }
 
 
@@ -153,55 +151,25 @@ class MessageType:
     WELCOME_MESSAGE: int = 65282
     INVITE_MESSAGE: int = 65283
     ALL: Tuple[int, ...] = (
-        TEXT,
-        STRIKE,
-        VOICE,
-        STICKER,
-        TYPE_USER_SHARE_EXURL,
-        TYPE_USER_SHARE_USER,
-        VOICE_CHAT_NOT_ANSWERED,
-        VOICE_CHAT_NOT_CANCELLED,
-        VOICE_CHAT_NOT_DECLINED,
-        VIDEO_CHAT_NOT_ANSWERED,
-        VIDEO_CHAT_NOT_CANCELLED,
-        VIDEO_CHAT_NOT_DECLINED,
-        AVATAR_CHAT_NOT_ANSWERED,
-        AVATAR_CHAT_NOT_CANCELLED,
-        AVATAR_CHAT_NOT_DECLINED,
-        DELETE_MESSAGE,
-        GROUP_MEMBER_JOIN,
-        GROUP_MEMBER_LEAVE,
-        CHAT_INVITE,
-        CHAT_BACKGROUND_CHANGED,
-        CHAT_TITLE_CHANGED,
-        CHAT_ICON_CHANGED,
-        VOICE_CHAT_START,
-        VIDEO_CHAT_START,
-        AVATAR_CHAT_START,
-        VOICE_CHAT_END,
-        VIDEO_CHAT_END,
-        AVATAR_CHAT_END,
-        CHAT_CONTENT_CHANGED,
-        SCREEN_ROOM_START,
-        SCREEN_ROOM_END,
-        CHAT_HOST_TRANSFERED,
-        TEXT_MESSAGE_FORCE_REMOVED,
-        CHAT_REMOVED_MESSAGE,
-        TEXT_MESSAGE_REMOVED_BY_ADMIN,
-        CHAT_TIP,
-        CHAT_PIN_ANNOUNCEMENT,
+        TEXT, STRIKE, VOICE, STICKER, TYPE_USER_SHARE_EXURL,
+        TYPE_USER_SHARE_USER, VOICE_CHAT_NOT_ANSWERED,
+        VOICE_CHAT_NOT_CANCELLED, VOICE_CHAT_NOT_DECLINED,
+        VIDEO_CHAT_NOT_ANSWERED, VIDEO_CHAT_NOT_CANCELLED,
+        VIDEO_CHAT_NOT_DECLINED, AVATAR_CHAT_NOT_ANSWERED,
+        AVATAR_CHAT_NOT_CANCELLED, AVATAR_CHAT_NOT_DECLINED, DELETE_MESSAGE,
+        GROUP_MEMBER_JOIN, GROUP_MEMBER_LEAVE, CHAT_INVITE,
+        CHAT_BACKGROUND_CHANGED, CHAT_TITLE_CHANGED, CHAT_ICON_CHANGED,
+        VOICE_CHAT_START, VIDEO_CHAT_START, AVATAR_CHAT_START, VOICE_CHAT_END,
+        VIDEO_CHAT_END, AVATAR_CHAT_END, CHAT_CONTENT_CHANGED,
+        SCREEN_ROOM_START, SCREEN_ROOM_END, CHAT_HOST_TRANSFERED,
+        TEXT_MESSAGE_FORCE_REMOVED, CHAT_REMOVED_MESSAGE,
+        TEXT_MESSAGE_REMOVED_BY_ADMIN, CHAT_TIP, CHAT_PIN_ANNOUNCEMENT,
         VOICE_CHAT_PERMISSION_OPEN_TO_EVERYONE,
         VOICE_CHAT_PERMISSION_INVITED_AND_REQUESTED,
-        VOICE_CHAT_PERMISSION_INVITE_ONLY,
-        CHAT_VIEW_ONLY_ENABLED,
-        CHAT_VIEW_ONLY_DISABLED,
-        CHAT_UNPIN_ANNOUNCEMENT,
-        CHAT_TIPPING_ENABLED,
-        CHAT_TIPPING_DISABLED,
-        TIMESTAMP_MESSAGE,
-        WELCOME_MESSAGE,
-        INVITE_MESSAGE
-    )
+        VOICE_CHAT_PERMISSION_INVITE_ONLY, CHAT_VIEW_ONLY_ENABLED,
+        CHAT_VIEW_ONLY_DISABLED, CHAT_UNPIN_ANNOUNCEMENT, CHAT_TIPPING_ENABLED,
+        CHAT_TIPPING_DISABLED, TIMESTAMP_MESSAGE, WELCOME_MESSAGE,
+        INVITE_MESSAGE)
 
 
 class MediaType:
@@ -229,12 +197,8 @@ class File:
 
 
 class LinkSnippet:
-    __slots__ = (
-        'link',
-        'media_upload_value',
-        'media_type',
-        'media_upload_value_content_type'
-    )
+    __slots__ = ('link', 'media_upload_value', 'media_type',
+                 'media_upload_value_content_type')
 
     def __init__(self,
                  link: str,
@@ -259,14 +223,7 @@ Path = TypeVar("Path", bound=str)
 
 
 class Slot:
-    __slots__ = (
-        'image',
-        'x',
-        'y',
-        'align',
-        'sticker_id',
-        'path'
-    )
+    __slots__ = ('image', 'x', 'y', 'align', 'sticker_id', 'path')
 
     def __init__(self,
                  image: Union[Path, bytes],
@@ -293,11 +250,7 @@ class Slot:
 
 
 class AllowedSlot:
-    __slots__ = (
-        'x',
-        'y',
-        'align'
-    )
+    __slots__ = ('x', 'y', 'align')
     x: int
     y: int
     align: int
@@ -308,27 +261,13 @@ class AllowedSlot:
         self.align = align
 
     def dict(self):
-        return {
-            "y": self.y,
-            "align": self.align,
-            "x": self.x
-        }
+        return {"y": self.y, "align": self.align, "x": self.x}
 
 
 class ChatBubbleConfig:
-    __slots__ = (
-        'image',
-        'template_id',
-        'name',
-        'cover_image_url',
-        'preview_background_url',
-        'color',
-        'link_color',
-        'slots',
-        'content_insets',
-        'allowed_slots',
-        'zoom_point'
-    )
+    __slots__ = ('image', 'template_id', 'name', 'cover_image_url',
+                 'preview_background_url', 'color', 'link_color', 'slots',
+                 'content_insets', 'allowed_slots', 'zoom_point')
 
     def __init__(self,
                  image_or_path: Union[bytes, Path],
@@ -364,21 +303,38 @@ class ChatBubbleConfig:
 
     def get_zip(self) -> bytes:
         config = {
-            "templateId": self.template_id,
-            "contentInsets": self.content_insets,
-            "coverImage": self.cover_image_url,
-            "id": "a7ee5618-a7aa-47ed-b68d-80088a0606e6",
-            "name": self.name,
-            "previewBackgroundUrl": self.preview_background_url,
-            "slots": (slot.dict() for slot in self.slots) if self.slots is not None else None,
-            "version": 1,
-            "vertexInset": 0,
-            "bubbleType": 1,
-            "zoomPoint": self.zoom_point,
-            'authors': 'Svyt Dola#2666 & Resq#5909',
-            "color": self.color,
-            "linkColor": self.link_color,
-            "allowedSlots": (slot.dict() for slot in self.allowed_slots) if self.allowed_slots else None,
+            "templateId":
+            self.template_id,
+            "contentInsets":
+            self.content_insets,
+            "coverImage":
+            self.cover_image_url,
+            "id":
+            "a7ee5618-a7aa-47ed-b68d-80088a0606e6",
+            "name":
+            self.name,
+            "previewBackgroundUrl":
+            self.preview_background_url,
+            "slots":
+            (slot.dict()
+             for slot in self.slots) if self.slots is not None else None,
+            "version":
+            1,
+            "vertexInset":
+            0,
+            "bubbleType":
+            1,
+            "zoomPoint":
+            self.zoom_point,
+            'authors':
+            'Svyt Dola#2666 & Resq#5909',
+            "color":
+            self.color,
+            "linkColor":
+            self.link_color,
+            "allowedSlots":
+            (slot.dict()
+             for slot in self.allowed_slots) if self.allowed_slots else None,
         }
         fm = BytesIO()
 

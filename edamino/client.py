@@ -61,6 +61,8 @@ class Client:
         self.proxy = proxy
         self.set_ndc(com_id)
         self.headers = {
+            "Content-Type": api.ContentType.APPLICATION_JSON,
+            "User-Agent": "Apple iPhone14,2 iOS v16.2 Main/3.13.1",
             "NDCDEVICEID":
             device_id if device_id is not None else api.DEVICE_ID
         }
