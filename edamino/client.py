@@ -1,7 +1,5 @@
 from contextlib import suppress
 from copy import copy
-from hashlib import sha1
-from hmac import new
 
 from edamino import objects, api
 from ujson import dumps, loads
@@ -96,7 +94,7 @@ class Client:
         Sending requests in amino.
         """
 
-        headers = self.headers
+        headers = copy(self.headers)
 
         if not full_url:
             url = f"https://service.narvii.com/api/v1/{self.ndc_id}/s/{url}"
