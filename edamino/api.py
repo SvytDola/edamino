@@ -8,8 +8,8 @@ from ujson import dumps
 from aiofile import async_open
 from hashlib import sha1
 
-SIG_KEY = bytes.fromhex("EAB4F1B9E3340CD1631EDE3B587CC3EBEDF1AFA9")
-DEV_KEY = bytes.fromhex("AE49550458D8E7C51D566916B04888BFB8B3CA7D")
+SIG_KEY = bytes.fromhex("DFA5ED192DDA6E88A12FE12130DC6206B1251E44")
+DEV_KEY = bytes.fromhex("E7309ECC0953C6FA60005B2765F99DBBC965C8E9")
 PREFIX = "19"
 PREFIX_BYTES = bytes.fromhex(PREFIX)
 
