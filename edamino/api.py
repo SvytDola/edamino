@@ -13,7 +13,6 @@ DEV_KEY = bytes.fromhex("AE49550458D8E7C51D566916B04888BFB8B3CA7D")
 PREFIX = "19"
 PREFIX_BYTES = bytes.fromhex(PREFIX)
 
-DEVICE_ID = "19BDF65215F4FB0DA41872C8A77EBA7EB6E478437504BC1C94C5D80A9D44D94634DE1FD209608499A2"
 
 
 def generate_device_id(device_info: Optional[str] = None) -> str:
@@ -21,6 +20,7 @@ def generate_device_id(device_info: Optional[str] = None) -> str:
     mac = new(DEV_KEY, PREFIX_BYTES + device_info, sha1)
     return f"{PREFIX}{device_info.hex()}{mac.hexdigest()}".upper()
 
+DEVICE_ID = generate_device_id()
 
 def generate_signature(data: str):
     signature = b64encode(
