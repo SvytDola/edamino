@@ -22,7 +22,9 @@ __all__ = ['Bot']
 
 load_dotenv('.env')
 
-Handler = namedtuple('Handler', ['commands', 'media_types', 'message_types', 'callback', 'description'])
+Handler = namedtuple(
+    'Handler',
+    ['commands', 'media_types', 'message_types', 'callback', 'description'])
 
 HANDLERS_COMMANDS: List[Handler] = []
 HANDLERS_EVENTS: List[Handler] = []
@@ -44,9 +46,11 @@ class ArgumentsNotFound(Exception):
     pass
 
 
-def get_annotations(handler: Handler, words: List[str], command: str, message: str) -> List:
+def get_annotations(handler: Handler, words: List[str], command: str,
+                    message: str) -> List:
     args = []
-    for count, (name, annotation) in enumerate([item for item in handler.callback.__annotations__.items()][1:]):
+    for count, (name, annotation) in enumerate(
+        [item for item in handler.callback.__annotations__.items()][1:]):
         if name == 'args':
             string = message.replace(command, '', 1)
             args.append(string)
@@ -61,11 +65,16 @@ def get_annotations(handler: Handler, words: List[str], command: str, message: s
 class Bot:
     # Most of the features are taken from the amsync library :D
 
-    __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid', 'timestamp', 'ws', 'client', 'futures', 'proxy')
+    __slots__ = ('email', 'password', 'prefix', 'loop', 'sid', 'uid',
+                 'timestamp', 'ws', 'client', 'futures', 'proxy')
 
     loop: Optional[AbstractEventLoop]
 
-    def __init__(self, email: str, password: str, prefix: str = "", proxy: Optional[str] = None):
+    def __init__(self,
+                 email: str,
+                 password: str,
+                 prefix: str = "",
+                 proxy: Optional[str] = None):
         self.uid = None
         self.sid = None
         self.loop = None
@@ -79,7 +88,10 @@ class Bot:
         self.client = None
 
     def get_context(self, client: Client, msg: Message, ws):
-        client_context = Client(session=client.session, device_id=client.device_id, com_id=msg.ndcId, proxy=self.proxy)
+        client_context = Client(session=client.session,
+                                device_id=client.device_id,
+                                com_id=msg.ndcId,
+                                proxy=self.proxy)
         client_context.login_sid(self.sid, self.uid)
         context = Context(msg=msg, client=client_context, ws=ws)
         return context
@@ -118,9 +130,9 @@ class Bot:
             file.write(string)
 
     @staticmethod
-    def event(
-            message_types: Optional[Union[List[int], Tuple[int, ...]]] = None,
-            media_types: Optional[Union[List[int], Tuple[int, ...]]] = None):
+    def event(message_types: Optional[Union[List[int], Tuple[int,
+                                                             ...]]] = None,
+              media_types: Optional[Union[List[int], Tuple[int, ...]]] = None):
 
         if not message_types:
             message_types = [MessageType.TEXT]
@@ -140,13 +152,11 @@ class Bot:
                 ON_MENTION = callback
                 return callback
 
-            handler = Handler(
-                description=None,
-                media_types=tuple(media_types),
-                message_types=tuple(message_types),
-                callback=callback,
-                commands=None
-            )
+            handler = Handler(description=None,
+                              media_types=tuple(media_types),
+                              message_types=tuple(message_types),
+                              callback=callback,
+                              commands=None)
             HANDLERS_EVENTS.append(handler)
             return callback
 
@@ -155,8 +165,10 @@ class Bot:
     def command(self,
                 commands: Union[str, List[str]],
                 description: str = "Not description.",
-                message_types: Optional[Union[List[int], Tuple[int, ...]]] = None,
-                media_types: Optional[Union[List[int], Tuple[int, ...]]] = None,
+                message_types: Optional[Union[List[int], Tuple[int,
+                                                               ...]]] = None,
+                media_types: Optional[Union[List[int], Tuple[int,
+                                                             ...]]] = None,
                 prefix: Optional[str] = None):
 
         if isinstance(commands, str):
@@ -173,18 +185,19 @@ class Bot:
             if iscoroutinefunction(callback) is False:
                 raise IsNotCoroutineFunction(callback.__name__)
 
-            current_command_list = [item for item_list in HANDLERS_COMMANDS for item in item_list.commands]
+            current_command_list = [
+                item for item_list in HANDLERS_COMMANDS
+                for item in item_list.commands
+            ]
             for command in commands:
                 if command in current_command_list:
                     raise TheCommandAlreadyExists(command)
 
-            handler = Handler(
-                commands=commands,
-                description=description,
-                media_types=tuple(media_types),
-                message_types=tuple(message_types),
-                callback=callback
-            )
+            handler = Handler(commands=commands,
+                              description=description,
+                              media_types=tuple(media_types),
+                              message_types=tuple(message_types),
+                              callback=callback)
             HANDLERS_COMMANDS.append(handler)
             return callback
 
@@ -202,49 +215,56 @@ class Bot:
             msg = s.o.chatMessage
             msg.ndcId = s.o.ndcId
 
-            if msg.uid != self.uid:
-                if ON_MENTION is not None:
-                    uids = ()
-                    with suppress(Exception):
-                        uids = (u.uid for u in msg.extensions.mentionedArray)
-                    with suppress(Exception):
-                        if self.uid in uids or self.uid == msg.extensions.replyMessage.uid:
-                            self.loop.create_task(ON_MENTION(self.get_context(self.client, msg, self.ws)))
+            if ON_MENTION is not None:
+                uids = ()
+                with suppress(Exception):
+                    uids = (u.uid for u in msg.extensions.mentionedArray)
+                with suppress(Exception):
+                    if self.uid in uids or self.uid == msg.extensions.replyMessage.uid:
+                        self.loop.create_task(
+                            ON_MENTION(
+                                self.get_context(self.client, msg, self.ws)))
 
-                for handler in HANDLERS_EVENTS:
-                    if msg.type in handler.message_types and msg.mediaType in handler.media_types:
+            for handler in HANDLERS_EVENTS:
+                if msg.type in handler.message_types and msg.mediaType in handler.media_types:
+                    context = self.get_context(self.client, msg, self.ws)
+                    self.loop.create_task(handler.callback(context))
+
+            if msg.content is not None:
+                command = msg.content.lower()
+
+                for handler in HANDLERS_COMMANDS:
+                    is_command_list = [
+                        command.startswith(c) for c in handler.commands
+                    ]
+                    if any(is_command_list):
                         context = self.get_context(self.client, msg, self.ws)
-                        self.loop.create_task(handler.callback(context))
+                        if '-h' in msg.content:
+                            await context.reply(handler.description)
+                            continue
 
-                if msg.content is not None:
-                    command = msg.content.lower()
-
-                    for handler in HANDLERS_COMMANDS:
-                        is_command_list = [command.startswith(c) for c in handler.commands]
-                        if any(is_command_list):
-                            context = self.get_context(self.client, msg, self.ws)
-                            if '-h' in msg.content:
-                                await context.reply(handler.description)
-                                continue
-
-                            args = [context]
-                            current_command = handler.commands[is_command_list.index(True)]
-                            content = msg.content[len(current_command):]
-                            words = content.split()
+                        args = [context]
+                        current_command = handler.commands[
+                            is_command_list.index(True)]
+                        content = msg.content[len(current_command):]
+                        words = content.split()
+                        try:
+                            args += get_annotations(handler, words,
+                                                    current_command, content)
+                        except ValueError as error:
+                            log.error(
+                                repr(error) +
+                                f"\nfunction: {handler.callback.__name__}")
+                            continue
+                        except ArgumentsNotFound as error:
+                            log.info(error)
+                            continue
+                        if msg.type in handler.media_types and msg.mediaType in handler.media_types:
                             try:
-                                args += get_annotations(handler, words, current_command, content)
-                            except ValueError as error:
-                                log.error(repr(error) + f"\nfunction: {handler.callback.__name__}")
-                                continue
-                            except ArgumentsNotFound as error:
-                                log.info(error)
-                                continue
-                            if msg.type in handler.media_types and msg.mediaType in handler.media_types:
-                                try:
-                                    self.loop.create_task(handler.callback(*args))
-                                except TypeError as e:
-                                    log.error(e)
-                            break
+                                self.loop.create_task(handler.callback(*args))
+                            except TypeError as e:
+                                log.error(e)
+                        break
 
     async def __call(self) -> None:
         timestamp: int = int(time())
@@ -254,6 +274,7 @@ class Bot:
             await ON_READY()
 
         if CALLBACKS:
+
             async def run_while_task(cal) -> None:
                 while True:
                     await cal(self.client)
@@ -270,7 +291,8 @@ class Bot:
                         await ON_READY()
 
                     if time() - self.timestamp > 60 * 60 * 12:
-                        login = await self.client.login(self.email, self.password)
+                        login = await self.client.login(
+                            self.email, self.password)
                         self.sid = login.sid
                         self.uid = login.auid
                         self.update_cfg()
@@ -278,7 +300,8 @@ class Bot:
                 data = await self.ws.receive_json(loads=loads)
                 await self.__call__handlers(data)
 
-            except (TypeError, KeyError, AttributeError, WebSocketConnectError):
+            except (TypeError, KeyError, AttributeError,
+                    WebSocketConnectError):
                 continue
 
     def start(self,
@@ -295,25 +318,32 @@ class Bot:
         try:
             if check_updates:
                 response = self.loop.run_until_complete(
-                    self.client.request('GET', 'https://pypi.org/pypi/ed-amino/json', full_url=True))
+                    self.client.request('GET',
+                                        'https://pypi.org/pypi/ed-amino/json',
+                                        full_url=True))
 
                 version = response['info']['version']
 
                 with open(f'{Path(__file__).parent}/__init__.py') as f:
-                    __version__ = search(r"'\d*.\d*.\d*.\d*'", f.read()).group().replace("'", '')
+                    __version__ = search(r"'\d*.\d*.\d*.\d*'",
+                                         f.read()).group().replace("'", '')
                 if __version__ != version:
-                    log.info(f'Please update to the latest version: {version}. Current version: {__version__}')
+                    log.info(
+                        f'Please update to the latest version: {version}. Current version: {__version__}'
+                    )
 
             profile: UserProfile
             if self.sid is None:
-                login = self.loop.run_until_complete(self.client.login(self.email, self.password))
+                login = self.loop.run_until_complete(
+                    self.client.login(self.email, self.password))
                 self.sid = login.sid
                 self.uid = login.auid
                 log.info("Update config.")
                 self.update_cfg()
                 profile = login.userProfile
             else:
-                profile = self.loop.run_until_complete(self.client.get_user_info(self.uid))
+                profile = self.loop.run_until_complete(
+                    self.client.get_user_info(self.uid))
 
             self.client.sid = self.sid
             self.client.uid = self.uid
@@ -336,7 +366,9 @@ class Bot:
 
         return callback
 
-    async def wait_for(self, check: Callable[[SocketAnswer], bool], timeout: Optional[float] = None) -> SocketAnswer:
+    async def wait_for(self,
+                       check: Callable[[SocketAnswer], bool],
+                       timeout: Optional[float] = None) -> SocketAnswer:
         while True:
             index = len(self.futures)
             try:
